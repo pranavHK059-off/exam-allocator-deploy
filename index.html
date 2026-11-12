@@ -1,0 +1,4191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Exam Allocation Manager</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+      :root {
+        --ink: #192820;
+        --muted: #758078;
+        --line: #e6eae5;
+        --paper: #fbfcfa;
+        --green: #35664b;
+        --mint: #eaf3ed;
+        --orange: #b96c2c;
+        --red: #b44f48;
+        --shadow: 0 12px 36px #1833240a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font:
+          14px "DM Sans",
+          sans-serif;
+      }
+      button,
+      input {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      .layout {
+        display: flex;
+        min-height: 100vh;
+      }
+      .sidebar {
+        width: 248px;
+        background: #f3f6f1;
+        border-right: 1px solid var(--line);
+        padding: 26px 18px;
+        display: flex;
+        flex-direction: column;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        font:
+          700 16px Manrope,
+          sans-serif;
+        padding: 0 8px 34px;
+      }
+      .logo {
+        width: 34px;
+        height: 34px;
+        border-radius: 11px;
+        background: #315f45;
+        color: white;
+        display: grid;
+        place-items: center;
+        font-size: 17px;
+      }
+      .side-label {
+        font-size: 10px;
+        letter-spacing: 1.2px;
+        color: #909991;
+        font-weight: 700;
+        padding: 0 10px 10px;
+      }
+      .nav {
+        display: grid;
+        gap: 5px;
+      }
+      .nav button {
+        border: 0;
+        background: transparent;
+        text-align: left;
+        padding: 11px 12px;
+        border-radius: 9px;
+        color: #627067;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+      }
+      .nav button.active {
+        background: white;
+        color: #234d35;
+        font-weight: 700;
+        box-shadow: 0 2px 8px #18332409;
+      }
+      .nav-icon {
+        width: 18px;
+        text-align: center;
+        font-size: 15px;
+      }
+      .sidebar-foot {
+        margin-top: auto;
+        border-top: 1px solid var(--line);
+        padding: 18px 8px 0;
+        color: #7e8980;
+        font-size: 12px;
+        line-height: 1.7;
+      }
+      .status-dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #6eaa7d;
+        margin-right: 6px;
+      }
+      .main {
+        flex: 1;
+        min-width: 0;
+      }
+      .topbar {
+        height: 70px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 42px;
+        background: #fff;
+      }
+      .crumb {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        color: #56645a;
+      }
+      .avatar {
+        width: 30px;
+        height: 30px;
+        background: #e5eee7;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: #315f45;
+        font-weight: 700;
+      }
+      .content {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 42px 70px;
+      }
+      .eyebrow {
+        font-size: 11px;
+        color: #65806d;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+      h1 {
+        font:
+          700 30px Manrope,
+          sans-serif;
+        letter-spacing: -0.7px;
+        margin-bottom: 8px;
+      }
+      h2 {
+        font:
+          700 20px Manrope,
+          sans-serif;
+        letter-spacing: -0.3px;
+        margin-bottom: 6px;
+      }
+      h3 {
+        font:
+          700 14px Manrope,
+          sans-serif;
+        margin-bottom: 6px;
+      }
+      .lead {
+        color: var(--muted);
+        line-height: 1.6;
+        margin-bottom: 28px;
+      }
+      .stepper {
+        display: flex;
+        gap: 10px;
+        margin: 27px 0 30px;
+      }
+      .step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #a0a8a1;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .step:not(:last-child):after {
+        content: "";
+        width: 44px;
+        height: 1px;
+        background: #dfe5df;
+        margin-left: 6px;
+      }
+      .step b {
+        border: 1px solid #dce3dc;
+        width: 23px;
+        height: 23px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+      }
+      .step.on {
+        color: #315f45;
+      }
+      .step.on b,
+      .step.done b {
+        border-color: #315f45;
+        background: #315f45;
+        color: white;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+      }
+      .upload-card {
+        padding: 19px 20px;
+        display: flex;
+        gap: 14px;
+        min-height: 116px;
+        align-items: flex-start;
+        transition: 0.18s;
+      }
+      .upload-card:hover {
+        border-color: #b7cabb;
+      }
+      .file-icon {
+        width: 39px;
+        height: 39px;
+        border-radius: 10px;
+        background: #eff5f0;
+        color: #35664b;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 11px;
+        flex-shrink: 0;
+      }
+      .upload-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .upload-info h3 {
+        margin: 2px 0 5px;
+      }
+      .upload-info p {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0;
+        line-height: 1.45;
+      }
+      .badge {
+        font-size: 10px;
+        color: #778177;
+        border: 1px solid #e4e8e2;
+        padding: 4px 7px;
+        border-radius: 20px;
+        white-space: nowrap;
+      }
+      .badge.required {
+        color: #946940;
+        background: #fbf5ec;
+        border-color: #f1e4d2;
+      }
+      .badge.valid {
+        color: #357148;
+        background: #eef7ef;
+        border-color: #dceede;
+      }
+      .badge.error {
+        color: #a74741;
+        background: #fdf0ef;
+        border-color: #f2d9d7;
+      }
+      .badge.loaded {
+        color: #35664b;
+        background: #eff5f0;
+        border-color: #dfebe1;
+      }
+      .file-name {
+        display: block;
+        font-size: 11px;
+        color: #477252;
+        margin-top: 7px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 30px 0 12px;
+      }
+      .section-head p {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0;
+      }
+      .hint {
+        background: #f0f5f0;
+        border: 1px solid #e2ebe2;
+        border-radius: 10px;
+        padding: 15px 17px;
+        color: #546458;
+        font-size: 12px;
+        line-height: 1.65;
+        margin-top: 22px;
+      }
+      .hint strong {
+        color: #315f45;
+      }
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 24px;
+      }
+      .btn {
+        border: 1px solid #dce3dc;
+        border-radius: 8px;
+        background: white;
+        padding: 10px 15px;
+        color: #425046;
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .btn:hover {
+        background: #f7faf7;
+      }
+      .btn.primary {
+        background: #315f45;
+        border-color: #315f45;
+        color: white;
+      }
+      .btn.primary:hover {
+        background: #284f39;
+      }
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .metric-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin: 23px 0;
+      }
+      .metric {
+        padding: 17px 18px;
+      }
+      .metric label {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .metric strong {
+        display: block;
+        font: 700 25px Manrope;
+        margin-top: 7px;
+      }
+      .metric span {
+        font-size: 11px;
+        color: #7d887f;
+      }
+      .validation-list {
+        display: grid;
+        gap: 9px;
+      }
+      .validation-row {
+        padding: 14px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .validation-left {
+        display: flex;
+        gap: 11px;
+        align-items: center;
+      }
+      .check {
+        color: #438153;
+        font-weight: 700;
+      }
+      .issues {
+        padding: 16px 18px;
+        border-color: #f0d5d1;
+        background: #fffafa;
+      }
+      .issue-line {
+        font-size: 12px;
+        color: #934741;
+        padding: 5px 0;
+      }
+      .table-wrap {
+        overflow: auto;
+      }
+      .data-table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 12px;
+      }
+      .data-table th {
+        text-align: left;
+        color: #818b82;
+        font-size: 10px;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        background: #f7f9f6;
+        padding: 12px;
+      }
+      .data-table td {
+        border-top: 1px solid var(--line);
+        padding: 12px;
+        white-space: nowrap;
+      }
+      .tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 3px;
+        background: #f1f4f0;
+        border-radius: 8px;
+        padding: 4px;
+      }
+      .tabs button {
+        border: 0;
+        background: transparent;
+        color: #748076;
+        padding: 8px 13px;
+        border-radius: 6px;
+        font-size: 12px;
+      }
+      .tabs button.on {
+        background: white;
+        color: #315f45;
+        font-weight: 700;
+        box-shadow: 0 1px 4px #0000000c;
+      }
+      .booking {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 17px;
+        border-top: 1px solid var(--line);
+        align-items: center;
+      }
+      .booking:first-child {
+        border-top: 0;
+      }
+      .booking strong {
+        font-size: 13px;
+      }
+      .booking small {
+        display: block;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .booking .time {
+        color: #45564a;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .room-title {
+        background: #f7f9f6;
+        padding: 10px 17px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #627167;
+      }
+      .empty {
+        padding: 42px 24px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: #10201666;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+      .modal {
+        background: white;
+        border-radius: 14px;
+        padding: 24px;
+        max-width: 610px;
+        width: 100%;
+        max-height: 80vh;
+        overflow: auto;
+        box-shadow: 0 25px 80px #15241944;
+      }
+      .modal-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .modal-head button {
+        border: 0;
+        background: none;
+        font-size: 21px;
+        color: #68756b;
+      }
+      .mono {
+        font:
+          11px Consolas,
+          monospace;
+        background: #f6f8f5;
+        padding: 10px;
+        border-radius: 7px;
+        overflow: auto;
+        white-space: pre;
+      }
+      .notice {
+        font-size: 12px;
+        color: #67756b;
+        line-height: 1.6;
+      }
+      .footer-note {
+        margin-top: 18px;
+        font-size: 11px;
+        color: #939b94;
+      }
+      /* Keep the equipment-view explanation inset from the card edges. */
+      .equipment-footnote {
+        margin: 14px 18px 18px;
+        line-height: 1.6;
+      }
+      /* Inventory panels are native dropdowns; the chevron makes that clear. */
+      .room-usage-panel summary {
+        align-items: center;
+      }
+      .room-usage-panel summary strong {
+        flex: 1 1 auto;
+      }
+      .room-usage-panel summary span {
+        margin-left: auto;
+        text-align: right;
+      }
+      .room-usage-panel summary::after {
+        content: "▾";
+        flex: 0 0 auto;
+        margin-left: 8px;
+        color: #758078;
+        font-size: 15px;
+        line-height: 1;
+        transition: transform 0.15s ease;
+      }
+      .room-usage-panel[open] summary::after {
+        transform: rotate(180deg);
+      }
+      @media (max-width: 760px) {
+        .resource-inventory summary {
+          flex-wrap: wrap;
+        }
+        .resource-inventory summary span {
+          flex: 1 1 calc(100% - 28px);
+          margin-left: 0;
+          text-align: left;
+        }
+        .equipment-footnote {
+          margin: 12px 14px 16px;
+        }
+      }
+      @media (max-width: 760px) {
+        .reserve-panel {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          width: 60px;
+          padding: 20px 8px;
+        }
+        .brand {
+          padding: 0 5px 27px;
+        }
+        .brand-name,
+        .side-label,
+        .nav-label,
+        .sidebar-foot {
+          display: none;
+        }
+        .nav button {
+          justify-content: center;
+          padding: 12px 8px;
+        }
+        .topbar {
+          padding: 0 18px;
+        }
+        .content {
+          padding: 28px 18px;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .step {
+          font-size: 10px;
+        }
+        .step:not(:last-child):after {
+          width: 15px;
+        }
+        .metric-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        h1 {
+          font-size: 26px;
+        }
+      }
+      .reserve-panel {
+        padding: 16px 18px;
+        margin: 0 0 16px;
+        display: grid;
+        grid-template-columns: minmax(200px, 1fr) minmax(300px, 1.5fr) auto;
+        gap: 16px;
+        align-items: center;
+        background: #f8faf7;
+      }
+      .reserve-panel h3 {
+        margin: 0 0 5px;
+      }
+      .reserve-panel p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.5;
+      }
+      .reserve-options {
+        display: grid;
+        gap: 8px;
+        font-size: 11px;
+        color: #4f5d52;
+      }
+      .reserve-options label {
+        display: flex;
+        gap: 7px;
+        align-items: flex-start;
+      }
+      .reserve-options input {
+        margin: 1px 0 0;
+        accent-color: #35664b;
+      }
+      .action-plan {
+        padding: 18px;
+        margin: 0 0 18px;
+        border-color: #ecd8bd;
+        background: #fffdfa;
+      }
+      .action-plan-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .action-plan-head h2 {
+        margin: 0;
+      }
+      .action-plan-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .action-tip {
+        background: #fff;
+        border: 1px solid #eee4d8;
+        border-radius: 8px;
+        padding: 12px;
+      }
+      .action-tip strong {
+        font-size: 12px;
+        color: #654b2e;
+      }
+      .action-tip p {
+        font-size: 11px;
+        line-height: 1.55;
+        color: #625e58;
+        margin: 6px 0 0;
+      }
+      .allocation-advice {
+        font-size: 11px;
+        color: #624b32;
+        background: #fff8ef;
+        border-left: 3px solid #dfad69;
+        border-radius: 4px;
+        padding: 8px 10px;
+        margin: 7px 0 3px;
+        line-height: 1.55;
+      }
+      .room-proctor {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin: -6px 0 12px;
+        font-size: 12px;
+        color: #56645a;
+      }
+      .seat.needs-review {
+        background: #fff0d9;
+        border-color: #e7c68c;
+        color: #87591e;
+      }
+      .status-pill {
+        display: inline-block;
+        margin-top: 4px;
+        padding: 3px 7px;
+        border-radius: 20px;
+        background: #eaf4ec;
+        color: #35664b;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: capitalize;
+      }
+      .status-pill.partial {
+        background: #fff4e5;
+        color: #935f1c;
+      }
+      .status-pill.unassigned {
+        background: #fff0ef;
+        color: #a34740;
+      }
+      .room-usage-panel{margin:0 0 16px;padding:0 16px}.room-usage-panel summary{cursor:pointer;list-style:none;padding:15px 2px;display:flex;justify-content:space-between;gap:12px;font-size:12px}.room-usage-panel summary::-webkit-details-marker{display:none}.room-usage-panel summary span{color:#758078;font-weight:400}.room-usage-panel .table-wrap{max-height:340px;overflow:auto}.resource-inventory .table-wrap{max-height:none;overflow-x:auto}.utilization-cell{display:grid;grid-template-columns:70px minmax(60px,110px);gap:8px;align-items:center}.util-track{height:6px;border-radius:8px;background:#edf0ec;overflow:hidden}.util-track b{display:block;height:100%;background:#52805d}.room-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr));
+        gap: 14px;
+        align-items: start;
+      }
+      .room-card {
+        padding: 16px;
+        min-width: 0;
+        overflow: hidden;
+      }
+      .room-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 13px;
+      }
+      .room-card-head strong {
+        font: 700 14px Manrope;
+      }
+      .room-card-head small {
+        display: block;
+        color: var(--muted);
+        margin-top: 4px;
+        line-height: 1.45;
+      }
+      .seat-map {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 6px;
+        padding: 13px;
+        background: #f7f9f6;
+        border: 1px solid #edf0ec;
+        border-radius: 9px;
+        min-height: 92px;
+      }
+      .seat {
+        aspect-ratio: 1.2;
+        border-radius: 5px;
+        border: 1px solid #dce5dc;
+        background: white;
+        color: #9aa49a;
+        display: grid;
+        place-items: center;
+        font-size: 9px;
+        min-width: 0;
+      }
+      .seat.broken {
+        background: #f4e5e1;
+        border-style: dashed;
+        border-color: #d3a29a;
+        color: #9a5148;
+        font-weight: 700;
+      }
+      .seat.occupied {
+        background: #dcecdf;
+        border-color: #aac8ae;
+        color: #28583b;
+        font-weight: 700;
+      }
+      .seat-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        font-size: 10px;
+        color: #778178;
+        margin-top: 10px;
+      }
+      .legend-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        background: #dcecdf;
+        margin-right: 4px;
+      }
+      .legend-dot.broken-dot {
+        background: #d3a29a;
+      }
+      .legend-dot.free {
+        background: #fff;
+        border: 1px solid #dce5dc;
+      }
+      .search-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .search-input {
+        width: min(340px, 55vw);
+        border: 1px solid #dce3dc;
+        background: #fff;
+        border-radius: 8px;
+        padding: 10px 12px;
+        color: var(--ink);
+        outline: none;
+      }
+      .search-input:focus {
+        border-color: #83a38b;
+        box-shadow: 0 0 0 3px #e8f1e9;
+      }
+      .entry-count {
+        font-size: 11px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .entry-row {
+        display: grid;
+        grid-template-columns: minmax(180px, 1.25fr) minmax(
+            110px,
+            0.9fr
+          ) minmax(150px, 1fr) minmax(115px, 0.8fr);
+        gap: 12px;
+        align-items: center;
+        padding: 12px 15px;
+        border-top: 1px solid var(--line);
+        font-size: 12px;
+        min-width: 650px;
+      }
+      .card:has(> .entry-row) {
+        overflow-x: auto;
+      }
+      .entry-row.head {
+        background: #f7f9f6;
+        color: #7e897f;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-top: 0;
+      }
+      .entry-row small {
+        display: block;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      .pager {
+        display: flex;
+        justify-content: center;
+        padding: 14px;
+      }
+      .tech-note {
+        font-size: 11px;
+        color: #748076;
+        border-top: 1px solid var(--line);
+        padding-top: 13px;
+        margin-top: 15px;
+        line-height: 1.6;
+      }
+      .calendar-toolbar {
+        display: flex;
+        gap: 10px;
+        align-items: end;
+        flex-wrap: wrap;
+      }
+      .field {
+        display: grid;
+        gap: 6px;
+        font-size: 11px;
+        color: #6d796f;
+        min-width: 150px;
+      }
+      .field input,
+      .field select,
+      .field textarea {
+        border: 1px solid #dce3dc;
+        border-radius: 7px;
+        padding: 9px 10px;
+        background: white;
+        color: var(--ink);
+        font: inherit;
+      }
+      .calendar-week {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(125px, 1fr));
+        gap: 8px;
+        overflow-x: auto;
+      }
+      .cal-day {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        min-height: 210px;
+        padding: 10px;
+      }
+      .cal-day.today {
+        border-color: #79a184;
+        box-shadow: 0 0 0 2px #eaf3ec;
+      }
+      .cal-day-head {
+        font-size: 11px;
+        font-weight: 700;
+        margin-bottom: 9px;
+      }
+      .cal-day-head small {
+        display: block;
+        color: var(--muted);
+        font-weight: 400;
+        margin-top: 3px;
+      }
+      .cal-event {
+        background: #edf5ee;
+        border-left: 3px solid #52805d;
+        border-radius: 5px;
+        padding: 7px;
+        margin: 6px 0;
+        font-size: 10px;
+        line-height: 1.4;
+      }
+      .cal-event strong {
+        display: block;
+        font-size: 10px;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 13px;
+      }
+      .report-preview {
+        white-space: pre-wrap;
+        background: #f7f9f6;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        padding: 15px;
+        max-height: 360px;
+        overflow: auto;
+        font:
+          12px/1.6 "DM Sans",
+          sans-serif;
+      }
+      .check-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        font-size: 12px;
+        color: #59675d;
+      }
+      .check-options label {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .entry-edit {
+        border: 0;
+        background: #edf4ee;
+        color: #35664b;
+        border-radius: 6px;
+        padding: 6px 9px;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .draft-badge {
+        font-size: 10px;
+        color: #9a5d2b;
+        background: #fff3e8;
+        border: 1px solid #f1ddc7;
+        border-radius: 20px;
+        padding: 4px 8px;
+      }
+      .notice-box {
+        border-radius: 9px;
+        padding: 12px 15px;
+        margin-bottom: 16px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .notice-box.error {
+        color: #8f3934;
+        background: #fff1ef;
+        border: 1px solid #f0d4d0;
+      }
+      .notice-box.success {
+        color: #315f45;
+        background: #eff7f0;
+        border: 1px solid #d5e8d7;
+      }
+      .notice-box.info {
+        color: #4f6355;
+        background: #f0f5f0;
+        border: 1px solid #e0e9e0;
+      }
+      .notice-box button {
+        float: right;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font-size: 17px;
+        margin: -4px -4px 0 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo">EA</div>
+          <span class="brand-name">Exam Allocation</span>
+        </div>
+        <div class="side-label">WORKSPACE</div>
+        <nav class="nav">
+          <button class="active" id="nav-home">
+            <span class="nav-icon">⌂</span
+            ><span class="nav-label">Overview</span></button
+          ><button id="nav-data">
+            <span class="nav-icon">▤</span
+            ><span class="nav-label">Input data</span></button
+          ><button id="nav-allocation">
+            <span class="nav-icon">▦</span
+            ><span class="nav-label">Allocation</span>
+          </button>
+        </nav>
+        <div class="sidebar-foot">
+          <span class="status-dot"></span>Local workspace<br />Files stay in
+          this browser
+        </div>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="crumb">
+            Workspace <span style="color: #c0c7c0">/</span>
+            <span id="crumb">Overview</span>
+          </div>
+          <div class="user">
+            <div class="avatar">C</div>
+            Coordinator
+          </div>
+        </header>
+        <div class="content"><div id="app"></div></div>
+      </main>
+    </div>
+    <div id="modal-root"></div>
+    <script>
+      const schemas = {
+        exams: {
+          title: "Student examination table",
+          short: "Student examinations",
+          desc: "One row per candidate sitting one paper.",
+          required: true,
+          fields: [
+            "candidate_id",
+            "candidate_name",
+            "subject",
+            "paper",
+            "date",
+            "start_time",
+            "duration_min",
+            "extra_time_min",
+            "equipment",
+          ],
+          example:
+            "candidate_id,candidate_name,subject,paper,date,start_time,duration_min,extra_time_min,equipment\nC001,Alex Morgan,Mathematics,P1,2026-06-02,09:00,60,0,none",
+        },
+        rooms: {
+          title: "Rooms table",
+          short: "Rooms",
+          desc: "Room IDs, seat capacity, availability and maintenance status.",
+          required: true,
+          fields: [
+            "room_id",
+            "capacity",
+            "unusable_seats",
+            "available_from",
+            "available_to",
+            "room_type",
+            "status",
+            "notes",
+          ],
+          example:
+            "room_id,capacity,unusable_seats,available_from,available_to,room_type,status,notes\nR101,24,0,08:00,16:00,standard,available,\nR102,18,2,08:00,16:00,standard,available,Two broken desks",
+        },
+        proctors: {
+          title: "Proctors table",
+          short: "Proctors",
+          desc: "Staff IDs, availability and subjects taught.",
+          required: true,
+          fields: [
+            "proctor_id",
+            "proctor_name",
+            "available_from",
+            "available_to",
+            "subjects_taught",
+          ],
+          example:
+            "proctor_id,proctor_name,available_from,available_to,subjects_taught\nP01,Jamie Lee,08:00,17:00,none",
+        },
+        equipment: {
+          title: "Equipment table",
+          short: "Equipment",
+          desc: "Equipment type and available quantity.",
+          required: true,
+          fields: ["equipment_type", "quantity"],
+          example: "equipment_type,quantity\nlaptop,12\nassistive_technology,2",
+        },
+      };
+      const data = {};
+      let page = "setup",
+        view = "room",
+        allocation = [];
+      const app = document.querySelector("#app");
+      function esc(s) {
+        return String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      }
+      function parseCSV(text) {
+        const rows = [];
+        let row = [],
+          cell = "",
+          quoted = false;
+        for (let i = 0; i < text.length; i++) {
+          let c = text[i];
+          if (c === '"') {
+            if (quoted && text[i + 1] === '"') {
+              cell += '"';
+              i++;
+            } else quoted = !quoted;
+          } else if (c === "," && !quoted) {
+            row.push(cell.trim());
+            cell = "";
+          } else if ((c === "\n" || c === "\r") && !quoted) {
+            if (c === "\r" && text[i + 1] === "\n") i++;
+            row.push(cell.trim());
+            if (row.some((x) => x !== "")) rows.push(row);
+            row = [];
+            cell = "";
+          } else cell += c;
+        }
+        row.push(cell.trim());
+        if (row.some((x) => x !== "")) rows.push(row);
+        if (!rows.length) return { headers: [], records: [] };
+        const headers = rows
+          .shift()
+          .map((x) => x.toLowerCase().replace(/^\uFEFF/, ""));
+        return {
+          headers,
+          records: rows.map((r) =>
+            Object.fromEntries(headers.map((h, i) => [h, r[i] ?? ""])),
+          ),
+        };
+      }
+      function normalizeRoomData(kind, parsed) {
+        // Keep browser validation in step with the Flask upload defaults.
+        const defaults = kind === "rooms"
+          ? { unusable_seats: "0", status: "available", notes: "" }
+          : kind === "exams"
+            ? { extra_time_min: "0", equipment: "none", rest_break_min: "0" }
+            : {};
+        for (const [field, value] of Object.entries(defaults)) {
+          if (!parsed.headers.includes(field)) {
+            parsed.headers.push(field);
+            parsed.records.forEach((row) => (row[field] = value));
+          }
+        }
+        return parsed;
+      }
+      function validate() {
+        const all = [];
+        const tableErrors = {};
+        const booleanValues = new Set([
+          "1", "0", "true", "false", "yes", "no", "y", "n", "required", "none",
+        ]);
+        const normal = (value) => String(value ?? "").trim().toLowerCase();
+        const whole = (value, allowZero = false) => {
+          if (String(value ?? "").trim() === "") return false;
+          const number = Number(value);
+          return Number.isFinite(number) && Number.isInteger(number) && (allowZero ? number >= 0 : number > 0);
+        };
+        const validDate = (value) => {
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) return false;
+          const parsed = new Date(`${value}T00:00:00Z`);
+          return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+        };
+
+        for (const [key, schema] of Object.entries(schemas)) {
+          const table = data[key];
+          if (!table) continue;
+          const issues = [];
+          const duplicateHeaders = new Set();
+          for (const header of table.headers) {
+            if (duplicateHeaders.has(header)) issues.push({ row: 1, msg: `Duplicate column name “${header}”.` });
+            duplicateHeaders.add(header);
+          }
+          const missing = schema.fields.filter((field) => !table.headers.includes(field));
+          for (const field of missing) issues.push({ row: 1, msg: `Missing required column “${field}”.` });
+          if (missing.length) {
+            table.errors = issues;
+            tableErrors[key] = issues;
+            all.push(...issues.map((issue) => ({ ...issue, file: schema.short })));
+            continue;
+          }
+          if (!table.records.length) issues.push({ row: 1, msg: "At least one data row is required." });
+
+          const keyRows = new Map();
+          const sessions = new Map();
+          table.records.forEach((row, index) => {
+            const line = index + 2;
+            const required = key === "exams"
+              ? ["candidate_id", "candidate_name", "subject", "paper", "date", "start_time", "duration_min"]
+              : key === "rooms"
+                ? ["room_id", "capacity", "available_from", "available_to", "room_type", "status"]
+                : key === "proctors"
+                  ? ["proctor_id", "proctor_name", "available_from", "available_to", "subjects_taught"]
+                  : ["equipment_type", "quantity"];
+            for (const field of required) {
+              if (!String(row[field] ?? "").trim()) issues.push({ row: line, msg: `${field} is required.` });
+            }
+
+            let keyValue = "";
+            if (key === "exams") keyValue = [row.candidate_id, row.subject, row.paper, row.date].map(normal).join("|");
+            else if (key === "rooms") keyValue = normal(row.room_id);
+            else if (key === "proctors") keyValue = normal(row.proctor_id);
+            else keyValue = normal(row.equipment_type);
+            if (keyValue) {
+              if (!keyRows.has(keyValue)) keyRows.set(keyValue, []);
+              keyRows.get(keyValue).push(line);
+            }
+
+            if (key === "exams") {
+              if (!validDate(String(row.date || "").trim())) issues.push({ row: line, msg: "date must be a real YYYY-MM-DD date." });
+              const startValid = timeOK(row.start_time);
+              if (!startValid) issues.push({ row: line, msg: "start_time must be a valid 24-hour HH:MM time." });
+              if (!whole(row.duration_min)) issues.push({ row: line, msg: "duration_min must be a positive whole number of minutes." });
+              if (!whole(row.extra_time_min || "0", true)) issues.push({ row: line, msg: "extra_time_min must be zero or a positive whole number." });
+              if (!whole(row.rest_break_min || "0", true)) issues.push({ row: line, msg: "rest_break_min must be zero or a positive whole number." });
+              if (startValid && whole(row.duration_min) && whole(row.extra_time_min || "0", true) && whole(row.rest_break_min || "0", true)) {
+                if (min(row.start_time) + Number(row.duration_min) + Number(row.extra_time_min || 0) + Number(row.rest_break_min || 0) > 1440) {
+                  issues.push({ row: line, msg: "The sitting, extra time and rest-break allowance must finish by midnight." });
+                }
+                const sessionKey = JSON.stringify([
+                  String(row.date || "").trim(), normal(row.subject), normal(row.paper), min(row.start_time),
+                ]);
+                if (!sessions.has(sessionKey)) sessions.set(sessionKey, []);
+                sessions.get(sessionKey).push({ line, duration: Number(row.duration_min) });
+              }
+              for (const field of ["separate_room", "reader", "scribe"]) {
+                const value = normal(row[field]);
+                if (value && !booleanValues.has(value)) issues.push({ row: line, msg: `${field} must be a yes/no or true/false value.` });
+              }
+            }
+
+            if (key === "rooms") {
+              if (!whole(row.capacity)) issues.push({ row: line, msg: "capacity must be a positive whole number of seats." });
+              if (!whole(row.unusable_seats || "0", true) || (whole(row.capacity) && Number(row.unusable_seats || 0) > Number(row.capacity))) {
+                issues.push({ row: line, msg: "unusable_seats must be a whole number from zero to capacity." });
+              }
+              if (!["available", "maintenance", "unusable"].includes(normal(row.status))) issues.push({ row: line, msg: "status must be available, maintenance or unusable." });
+            }
+
+            if (["rooms", "proctors"].includes(key)) {
+              const fromValid = timeOK(row.available_from), toValid = timeOK(row.available_to);
+              if (!fromValid) issues.push({ row: line, msg: "available_from must be a valid 24-hour HH:MM time." });
+              if (!toValid) issues.push({ row: line, msg: "available_to must be a valid 24-hour HH:MM time." });
+              if (fromValid && toValid && min(row.available_from) >= min(row.available_to)) {
+                issues.push({ row: line, msg: "Availability must finish after it starts; overnight availability is not supported." });
+              }
+            }
+            if (key === "equipment" && !whole(row.quantity, true)) issues.push({ row: line, msg: "quantity must be a whole number of zero or greater." });
+          });
+
+          for (const [duplicate, lines] of keyRows) {
+            if (lines.length > 1) {
+              for (const line of lines) issues.push({ row: line, msg: `Duplicate identifier/key “${duplicate}” (case-insensitive).` });
+            }
+          }
+          for (const members of sessions.values()) {
+            if (new Set(members.map((member) => member.duration)).size > 1) {
+              for (const member of members) issues.push({ row: member.line, msg: "Candidates in the same paper sitting must share duration_min; use extra_time_min for individual extra time." });
+            }
+          }
+          table.errors = issues;
+          tableErrors[key] = issues;
+          all.push(...issues.map((issue) => ({ ...issue, file: schema.short })));
+        }
+
+        // Equipment cross-checks are deferred until both tables exist, so users
+        // can upload the four CSVs in any order.
+        if (data.exams && data.equipment) {
+          const allowed = new Set(data.equipment.records.map((row) => normal(row.equipment_type)));
+          data.exams.records.forEach((row, index) => {
+            const line = index + 2;
+            const requested = normal(row.equipment || "none");
+            if (requested && !["none", "n/a", "na", "null"].includes(requested) && !allowed.has(requested)) {
+              const issue = { row: line, msg: `Equipment type “${row.equipment}” is not listed in the equipment table.` };
+              (tableErrors.exams ||= []).push(issue);
+              all.push({ ...issue, file: schemas.exams.short });
+            }
+            for (const field of ["reader", "scribe"]) {
+              if (["1", "true", "yes", "y", "required"].includes(normal(row[field])) && !allowed.has(field)) {
+                const issue = { row: line, msg: `A student requires ${field} support, but no “${field}” equipment type is listed.` };
+                (tableErrors.exams ||= []).push(issue);
+                all.push({ ...issue, file: schemas.exams.short });
+              }
+            }
+          });
+          data.exams.errors = tableErrors.exams || [];
+        }
+        return all;
+      }
+      function timeOK(t) {
+        return (
+          /^\d{1,2}:\d\d$/.test(t || "") &&
+          Number(t.split(":")[0]) < 24 &&
+          Number(t.split(":")[1]) < 60
+        );
+      }
+      function min(t) {
+        let [a, b] = t.split(":").map(Number);
+        return a * 60 + b;
+      }
+      function clock(n) {
+        return (
+          String(Math.floor(n / 60) % 24).padStart(2, "0") +
+          ":" +
+          String(n % 60).padStart(2, "0")
+        );
+      }
+      function complete() {
+        return Object.keys(schemas).every((k) => data[k]);
+      }
+      function errors() {
+        return validate();
+      }
+      function go(p) {
+        page = p;
+        render();
+      }
+      function render() {
+        document.querySelector("#crumb").textContent =
+          page === "setup"
+            ? "Overview"
+            : page === "data"
+              ? "Input data"
+              : "Allocation";
+        document
+          .querySelectorAll(".nav button")
+          .forEach((b) => b.classList.remove("active"));
+        document
+          .querySelector("#nav-" + (page === "setup" ? "home" : page))
+          .classList.add("active");
+        app.innerHTML =
+          page === "setup"
+            ? setup()
+            : page === "data"
+              ? dataPage()
+              : allocationPage();
+      }
+      function setup() {
+        let ready = complete(),
+          issues = ready ? errors() : [];
+        if (!ready)
+          return `<div class="eyebrow">EXAMINATION COORDINATOR DASHBOARD</div><h1>Let’s set up your examination schedule.</h1><p class="lead">Bring your examination data and available resources together. We’ll check everything before creating an allocation.</p>${stepper(1)}<div class="section-head"><div><h2>Your input tables</h2><p>Upload each CSV to get started. One exam row represents one candidate sitting one paper.</p></div></div><div class="grid">${Object.entries(
+            schemas,
+          )
+            .map(([k, s]) => uploadCard(k, s))
+            .join(
+              "",
+            )}</div><div class="hint"><strong>Start with four CSV files.</strong> Each file is checked in your browser. You’ll see the row number and reason for any issues, then can correct the file and upload it again. <a href="#" onclick="showSchema();return false" style="color:#35664b;font-weight:700">View CSV format</a></div><div class="actions"><button class="btn primary" disabled>Validate data <span>→</span></button></div>`;
+        return `<div class="eyebrow">EXAMINATION COORDINATOR DASHBOARD</div><h1>Data overview</h1><p class="lead">Review your uploaded tables. Resolve any errors before generating an allocation.</p>${stepper(2)}<div class="metric-row"><div class="card metric"><label>Candidates</label><strong>${new Set(data.exams.records.map((r) => r.candidate_id)).size}</strong><span>From examination table</span></div><div class="card metric"><label>Exam entries</label><strong>${data.exams.records.length}</strong><span>Candidate paper sittings</span></div><div class="card metric"><label>Rooms available</label><strong>${data.rooms.records.filter((r) => (r.status || "available").toLowerCase() === "available").length}</strong><span>Operational rooms · ${data.rooms.records.length} total</span></div><div class="card metric"><label>Proctors available</label><strong>${data.proctors.records.length}</strong><span>Uploaded staff</span></div></div><div class="section-head"><div><h2>Validation summary</h2><p>All four tables must be valid before allocation.</p></div></div><div class="validation-list">${Object.entries(
+          schemas,
+        )
+          .map(([k, s]) => {
+            let d = data[k],
+              n = d.errors?.length || 0;
+            return `<div class="card validation-row"><div class="validation-left"><span class="check">${n ? "!" : "✓"}</span><div><strong>${s.title}</strong><div style="font-size:11px;color:#818b82;margin-top:3px">${d.records.length} rows · ${esc(d.fileName)}</div></div></div><span class="badge ${n ? "error" : "valid"}">${n ? `${n} issue${n > 1 ? "s" : ""}` : "Valid"}</span></div>`;
+          })
+          .join(
+            "",
+          )}</div>${issues.length ? `<div class="card issues" style="margin-top:14px"><strong style="color:#954c45">Fix these rows and upload the corrected file.</strong>${issues.map((e) => `<div class="issue-line">${esc(e.file)} · row ${e.row}: ${esc(e.msg)}</div>`).join("")}</div>` : ""}<div class="actions"><button class="btn" onclick="go('data')">Manage data</button><button class="btn primary" onclick="generate()" ${issues.length ? "disabled" : ""}>Generate allocation →</button></div>`;
+      }
+      function stepper(n) {
+        return `<div class="stepper"><div class="step ${n === 1 ? "on" : "done"}"><b>${n > 1 ? "✓" : "1"}</b> Upload tables</div><div class="step ${n === 2 ? "on" : ""}"><b>2</b> Validate data</div><div class="step"><b>3</b> Allocate resources</div></div>`;
+      }
+      function uploadCard(k, s) {
+        let d = data[k],
+          issue = d?.errors?.length;
+        return `<label class="card upload-card" style="cursor:pointer"><div class="file-icon">CSV</div><div class="upload-info"><div style="display:flex;justify-content:space-between;gap:8px"><h3>${s.title}</h3><span class="badge ${d ? (issue ? "error" : "loaded") : "required"}">${d ? (issue ? "Needs attention" : "Uploaded") : "Required"}</span></div><p>${s.desc}</p>${d ? `<span class="file-name">${esc(d.fileName)} · ${d.records.length} rows${issue ? ` · ${issue} issues` : ""}</span>` : ""}<input type="file" accept=".csv,text/csv" hidden onchange="upload('${k}',this.files[0])"></div></label>`;
+      }
+      function dataPage() {
+        return `<div class="eyebrow">INPUT DATA</div><h1>Manage your tables</h1><p class="lead">Upload and inspect the source records used to build the schedule.</p><div class="grid">${Object.entries(
+          schemas,
+        )
+          .map(([k, s]) => uploadCard(k, s))
+          .join(
+            "",
+          )}</div><div class="section-head"><div><h2>Validation details</h2><p>Errors include source row numbers so you can correct the right records.</p></div><button class="btn" onclick="showSchema()">CSV format</button></div>${
+          Object.keys(data).length
+            ? Object.entries(schemas)
+                .filter(([k]) => data[k])
+                .map(([k, s]) => {
+                  let d = data[k],
+                    errs = d.errors || [];
+                  return `<div class="card" style="margin-bottom:13px"><div style="padding:15px 17px;display:flex;justify-content:space-between"><strong>${s.title}</strong><span class="badge ${errs.length ? "error" : "valid"}">${errs.length ? `${errs.length} issues` : "Valid"}</span></div>${
+                    errs.length
+                      ? `<div class="issues" style="border-radius:0 0 12px 12px">${errs.map((e) => `<div class="issue-line">Row ${e.row}: ${esc(e.msg)}</div>`).join("")}</div>`
+                      : `<div class="table-wrap"><table class="data-table"><thead><tr>${d.headers.map((x) => `<th>${esc(x)}</th>`).join("")}</tr></thead><tbody>${d.records
+                          .slice(0, 8)
+                          .map(
+                            (r) =>
+                              `<tr>${d.headers.map((h) => `<td>${esc(r[h])}</td>`).join("")}</tr>`,
+                          )
+                          .join(
+                            "",
+                          )}</tbody></table>${d.records.length > 8 ? `<div class="footer-note" style="padding:0 14px 12px">Showing 8 of ${d.records.length} rows</div>` : ""}</div>`
+                  }</div>`;
+                })
+                .join("")
+            : `<div class="card empty">Upload a CSV above to inspect its rows and validation results.</div>`
+        }<div class="actions"><button class="btn primary" onclick="go('setup')">Back to overview →</button></div>`;
+      }
+      function allocationPage() {
+        if (!allocation.length)
+          return `<div class="eyebrow">ALLOCATION WORKSPACE</div><h1>Allocation</h1><p class="lead">Your proposed bookings will appear here after allocation.</p><div class="card empty">No allocation has been generated yet.<br><button class="btn primary" style="margin-top:16px" onclick="go('setup')">Review input data</button></div>`;
+        let list =
+          view === "room"
+            ? allocation
+            : view === "candidate"
+              ? [...allocation].sort((a, b) =>
+                  a.candidate_id.localeCompare(b.candidate_id),
+                )
+              : [...allocation].sort((a, b) =>
+                  a.proctor_id.localeCompare(b.proctor_id),
+                );
+        let groups = {};
+        list.forEach((x) => {
+          let key =
+            view === "room"
+              ? x.room_id || "Unassigned"
+              : view === "candidate"
+                ? `${x.candidate_name} · ${x.candidate_id}`
+                : `${x.proctor_name} · ${x.proctor_id || "Unassigned"}`;
+          (groups[key] ??= []).push(x);
+        });
+        let unassigned = allocation.filter(
+          (a) => !a.room_id || !a.proctor_id || !a.equipment_ok,
+        );
+        return `<div class="eyebrow">ALLOCATION WORKSPACE</div><h1>Proposed allocation</h1><p class="lead">Review room bookings, candidate papers and proctor duties. Times include each candidate’s extra time.</p><div class="metric-row"><div class="card metric"><label>Exam entries</label><strong>${allocation.length}</strong><span>Candidate paper sittings</span></div><div class="card metric"><label>Unresolved</label><strong>${unassigned.length}</strong><span>Entries needing review</span></div><div class="card metric"><label>Rooms used</label><strong>${new Set(allocation.filter((a) => a.room_id).map((a) => a.room_id)).size}</strong><span>Rooms reused over time</span></div><div class="card metric"><label>Plan checks</label><strong>${unassigned.length ? "Review" : "Pass"}</strong><span>Room and proctor availability</span></div></div>${
+          unassigned.length
+            ? `<div class="card issues" style="margin-bottom:16px"><strong style="color:#954c45">Unresolved assignments</strong>${unassigned
+                .slice(0, 8)
+                .map(
+                  (a) =>
+                    `<div class="issue-line">${esc(a.candidate_name)} · ${esc(a.subject)} ${esc(a.paper)}: ${[a.student_conflict ? "overlapping papers for this student" : "", !a.room_id && !a.student_conflict ? "no operational room available" : "", !a.proctor_id && !a.student_conflict ? "no eligible available proctor" : "", !a.equipment_ok ? "equipment quantity unavailable" : ""].filter(Boolean).join("; ")}.</div>`,
+                )
+                .join("")}</div>`
+            : ""
+        }${advicePanel(unassigned)}<div class="section-head"><div><h2>Schedule entries</h2><p>Back-to-back bookings are allowed when one ends as another begins.</p></div><div class="tabs"><button class="${view === "room" ? "on" : ""}" onclick="setView('room')">By room</button><button class="${view === "candidate" ? "on" : ""}" onclick="setView('candidate')">By candidate</button><button class="${view === "proctor" ? "on" : ""}" onclick="setView('proctor')">By proctor</button></div></div><div class="card">${Object.entries(
+          groups,
+        )
+          .map(
+            ([g, rows]) =>
+              `<div class="room-title">${esc(view === "room" ? "Room " + g : g)}</div>${rows.map((a) => `<div class="booking"><div><strong>${esc(a.candidate_name)} · ${esc(a.subject)} ${esc(a.paper)}</strong><small>${esc(a.date)}${view !== "candidate" ? ` · ${esc(a.room_id || "Room unassigned")}` : ""}${a.equipment && a.equipment !== "none" ? ` · ${esc(a.equipment)}${a.equipment_ok ? "" : " · unavailable"}` : ""}</small></div><div class="time">${a.start_time}–${clock(a.end)}${view !== "proctor" ? `<small>${esc(a.proctor_name)}</small>` : ""}</div></div>`).join("")}`,
+          )
+          .join(
+            "",
+          )}</div><div class="hint"><strong>Allocation method:</strong> entries are placed by start time and duration. Rooms and proctors are reused when free. This is a first pass that checks overlaps, room availability, proctor availability and taught subjects; review unresolved entries before using the schedule.</div><div class="actions"><button class="btn" onclick="go('data')">Manage data</button><button class="btn primary" onclick="generate()">Regenerate allocation</button></div>`;
+      }
+      function upload(k, file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          let parsed = parseCSV(reader.result);
+          data[k] = { ...parsed, fileName: file.name, errors: [] };
+          validate();
+          render();
+        };
+        reader.readAsText(file);
+      }
+      function generate() {
+        let issues = errors();
+        if (issues.length || !complete()) {
+          go("data");
+          return;
+        }
+        let exams = data.exams.records
+          .map((r, i) => ({
+            ...r,
+            _i: i,
+            start: min(r.start_time),
+            end:
+              min(r.start_time) +
+              Number(r.duration_min) +
+              Number(r.extra_time_min || 0),
+          }))
+          .sort((a, b) => a.start - b.start || b.end - a.end);
+        let rooms = data.rooms.records,
+          staff = data.proctors.records;
+        let roomBookings = {},
+          staffBookings = {},
+          eqBookings = {},
+          candidateBookings = {},
+          result = [];
+        for (const e of exams) {
+          let studentFree = !(candidateBookings[e.candidate_id] || []).some(
+            (b) => b.date === e.date && overlap(e.start, e.end, b.start, b.end),
+          );
+          let room =
+            studentFree &&
+            rooms.find(
+              (r) =>
+                Number(r.capacity) >= 1 &&
+                (r.status || "available").toLowerCase() === "available" &&
+                r.available_from &&
+                min(r.available_from) <= e.start &&
+                min(r.available_to) >= e.end &&
+                !(roomBookings[r.room_id] || []).some(
+                  (b) =>
+                    b.date === e.date &&
+                    overlap(e.start, e.end, b.start, b.end),
+                ),
+            );
+          let person =
+            studentFree &&
+            staff.find(
+              (p) =>
+                min(p.available_from) <= e.start &&
+                min(p.available_to) >= e.end &&
+                !(p.subjects_taught || "")
+                  .toLowerCase()
+                  .split(/[|;]/)
+                  .map((s) => s.trim())
+                  .includes(e.subject.toLowerCase()) &&
+                !(staffBookings[p.proctor_id] || []).some(
+                  (b) =>
+                    b.date === e.date &&
+                    overlap(e.start, e.end, b.start, b.end),
+                ),
+            );
+          let type = (e.equipment || "none").trim().toLowerCase(),
+            eqType = data.equipment.records.find(
+              (q) => q.equipment_type.toLowerCase() === type,
+            );
+          let eqok =
+            type === "none" ||
+            (eqType &&
+              (eqBookings[type] || []).filter(
+                (b) =>
+                  b.date === e.date && overlap(e.start, e.end, b.start, b.end),
+              ).length < Number(eqType.quantity));
+          if (room) {
+            (roomBookings[room.room_id] ??= []).push({
+              date: e.date,
+              start: e.start,
+              end: e.end,
+            });
+          }
+          if (person) {
+            (staffBookings[person.proctor_id] ??= []).push({
+              date: e.date,
+              start: e.start,
+              end: e.end,
+            });
+          }
+          if (eqok && type !== "none")
+            (eqBookings[type] ??= []).push({
+              date: e.date,
+              start: e.start,
+              end: e.end,
+            });
+          if (studentFree)
+            (candidateBookings[e.candidate_id] ??= []).push({
+              date: e.date,
+              start: e.start,
+              end: e.end,
+            });
+          result.push({
+            ...e,
+            room_id: room?.room_id || null,
+            proctor_id: person?.proctor_id || null,
+            proctor_name: person?.proctor_name || "Unassigned",
+            equipment_ok: eqok,
+            student_conflict: !studentFree,
+          });
+        }
+        allocation = result;
+        view = "room";
+        page = "allocation";
+        render();
+      }
+      function overlap(s, e, a, b) {
+        return s < b && a < e;
+      }
+      function setView(v) {
+        view = v;
+        render();
+      }
+      function showSchema() {
+        document.querySelector("#modal-root").innerHTML =
+          `<div class="modal-backdrop" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modal-head"><div><div class="eyebrow">CSV GUIDE</div><h2>Required file formats</h2></div><button onclick="closeModal()">×</button></div><p class="notice">Use a header row with the exact column names below. Save each table as a separate UTF-8 CSV. Optional values can be blank; use <code>none</code> when no equipment is needed.</p>${Object.entries(
+            schemas,
+          )
+            .map(
+              ([k, s]) =>
+                `<h3 style="margin-top:18px">${s.title}</h3><div class="notice">Columns: ${s.fields.join(", ")}</div><pre class="mono">${esc(s.example)}</pre><button class="btn" onclick="downloadTemplate('${k}')">Download example CSV</button>`,
+            )
+            .join(
+              "",
+            )}<p class="notice" style="margin-top:16px"><strong>Equipment:</strong> each examination row’s equipment value must match an equipment_type row. Proctor subjects_taught accepts subjects separated by | or ;. Set it to none if the proctor teaches no listed exam subjects.</p></div></div>`;
+      }
+      function closeModal() {
+        document.querySelector("#modal-root").innerHTML = "";
+      }
+      function downloadTemplate(k) {
+        const blob = new Blob([schemas[k].example + "\n"], {
+            type: "text/csv",
+          }),
+          a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = k + ".csv";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+      document.querySelector("#nav-home").onclick = () => go("setup");
+      document.querySelector("#nav-data").onclick = () => go("data");
+      document.querySelector("#nav-allocation").onclick = () =>
+        go("allocation");
+      let visibleCount = 20,
+        allocationSearch = "";
+      function generateLocal() {
+        let problems = errors();
+        if (problems.length || !complete()) {
+          go("data");
+          return;
+        }
+        let exams = data.exams.records
+          .map((r, i) => ({
+            ...r,
+            _i: i,
+            start: min(r.start_time),
+            end:
+              min(r.start_time) +
+              Number(r.duration_min) +
+              Number(r.extra_time_min || 0),
+          }))
+          .sort((a, b) => a.start - b.start || b.end - a.end);
+        let rooms = data.rooms.records,
+          staff = data.proctors.records,
+          roomBookings = {},
+          staffBookings = {},
+          eqBookings = {},
+          candidateBookings = {},
+          result = [];
+        for (const e of exams) {
+          let studentFree = !(candidateBookings[e.candidate_id] || []).some(
+              (b) =>
+                b.date === e.date && overlap(e.start, e.end, b.start, b.end),
+            ),
+            session = `${e.date}|${e.subject}|${e.paper}|${e.start}|${e.end}`;
+          let room =
+            studentFree &&
+            rooms.find((r) => {
+              let bookings = roomBookings[r.room_id] || [],
+                same = bookings.find((b) => b.session === session);
+              return (
+                Number(r.capacity) >= 1 &&
+                (r.status || "available").toLowerCase() === "available" &&
+                min(r.available_from) <= e.start &&
+                min(r.available_to) >= e.end &&
+                (same
+                  ? same.seats.length < Number(r.capacity)
+                  : !bookings.some(
+                      (b) =>
+                        b.date === e.date &&
+                        overlap(e.start, e.end, b.start, b.end),
+                    ))
+              );
+            });
+          let person =
+            studentFree &&
+            staff.find((p) => {
+              let bookings = staffBookings[p.proctor_id] || [],
+                same = bookings.find((b) => b.session === session);
+              return (
+                min(p.available_from) <= e.start &&
+                min(p.available_to) >= e.end &&
+                !(p.subjects_taught || "")
+                  .toLowerCase()
+                  .split(/[|;]/)
+                  .map((s) => s.trim())
+                  .includes(e.subject.toLowerCase()) &&
+                (same ||
+                  !bookings.some(
+                    (b) =>
+                      b.date === e.date &&
+                      overlap(e.start, e.end, b.start, b.end),
+                  ))
+              );
+            });
+          let type = (e.equipment || "none").trim().toLowerCase(),
+            eqType = data.equipment.records.find(
+              (q) => q.equipment_type.toLowerCase() === type,
+            ),
+            eqok =
+              type === "none" ||
+              (eqType &&
+                (eqBookings[type] || []).filter(
+                  (b) =>
+                    b.date === e.date &&
+                    overlap(e.start, e.end, b.start, b.end),
+                ).length < Number(eqType.quantity));
+          let seat = null;
+          if (room) {
+            let rb = roomBookings[room.room_id] || [],
+              booking = rb.find((b) => b.session === session);
+            if (!booking) {
+              booking = {
+                session,
+                date: e.date,
+                start: e.start,
+                end: e.end,
+                seats: [],
+                room_id: room.room_id,
+                room_capacity: Number(room.capacity),
+                subject: e.subject,
+                paper: e.paper,
+              };
+              rb.push(booking);
+              roomBookings[room.room_id] = rb;
+            }
+            seat = booking.seats.length + 1;
+            booking.seats.push({
+              candidate_id: e.candidate_id,
+              candidate_name: e.candidate_name,
+              seat,
+            });
+          }
+          if (person) {
+            let pb = staffBookings[person.proctor_id] || [],
+              booking = pb.find((b) => b.session === session);
+            if (!booking) {
+              booking = { session, date: e.date, start: e.start, end: e.end };
+              pb.push(booking);
+            }
+          }
+          if (eqok && type !== "none")
+            (eqBookings[type] ??= []).push({
+              date: e.date,
+              start: e.start,
+              end: e.end,
+            });
+          if (studentFree)
+            (candidateBookings[e.candidate_id] ??= []).push({
+              date: e.date,
+              start: e.start,
+              end: e.end,
+            });
+          result.push({
+            ...e,
+            room_id: room?.room_id || null,
+            room_capacity: room ? Number(room.capacity) : 0,
+            seat,
+            proctor_id: person?.proctor_id || null,
+            proctor_name: person?.proctor_name || "Unassigned",
+            equipment_ok: !!eqok,
+            student_conflict: !studentFree,
+          });
+        }
+        allocation = result;
+        visibleCount = 20;
+        allocationSearch = "";
+        view = "room";
+        page = "allocation";
+        render();
+      }
+      function upload(k, file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async () => {
+          let parsed = parseCSV(reader.result);
+          data[k] = { ...parsed, fileName: file.name, errors: [] };
+          validate();
+          if (["http:", "https:"].includes(location.protocol)) {
+            try {
+              let fd = new FormData();
+              fd.append("file", file);
+              let response = await fetch(`/api/upload/${k === "exams" ? "students" : k}`, {
+                  method: "POST",
+                  body: fd,
+                }),
+                result = await response.json();
+              if (!response.ok)
+                data[k].errors = [
+                  ...(data[k].errors || []),
+                  ...(result.issues || []).map((e) => ({
+                    row: e.row,
+                    msg: e.message,
+                  })),
+                ];
+              window.apiReady = true;
+            } catch (e) {
+              window.apiReady = false;
+            }
+          }
+          render();
+        };
+        reader.readAsText(file);
+      }
+      function searchAllocation(v) {
+        allocationSearch = v;
+        visibleCount = 20;
+        render();
+        let input = document.querySelector("#allocation-search");
+        if (input) {
+          input.focus();
+          input.setSelectionRange(v.length, v.length);
+        }
+      }
+      function showMore() {
+        visibleCount += 20;
+        render();
+      }
+      function allocationPage() {
+        if (!allocation.length)
+          return `<div class="eyebrow">ALLOCATION WORKSPACE</div><h1>Allocation</h1><p class="lead">Your proposed bookings will appear here after allocation.</p><div class="card empty">No allocation has been generated yet.<br><button class="btn primary" style="margin-top:16px" onclick="go('setup')">Review input data</button></div>`;
+        let q = allocationSearch.trim().toLowerCase(),
+          filtered = allocation.filter((a) =>
+            [
+              a.room_id,
+              a.candidate_id,
+              a.candidate_name,
+              a.proctor_id,
+              a.proctor_name,
+              a.subject,
+              a.paper,
+            ].some((v) =>
+              String(v || "")
+                .toLowerCase()
+                .includes(q),
+            ),
+          ),
+          unresolved = allocation.filter(
+            (a) =>
+              !a.room_id ||
+              !a.proctor_id ||
+              !a.equipment_ok ||
+              a.student_conflict,
+          );
+        let rows = filtered.slice(0, visibleCount),
+          allSessions = {};
+        allocation.forEach((a) => {
+          if (!a.room_id) return;
+          let k = `${a.room_id}|${a.date}|${a.subject}|${a.paper}|${a.start}`;
+          (allSessions[k] ??= {
+            room_id: a.room_id,
+            date: a.date,
+            subject: a.subject,
+            paper: a.paper,
+            start: a.start,
+            end: a.end,
+            capacity: a.room_capacity,
+            totalCapacity: a.room_total_capacity ?? a.room_capacity,
+            unusableSeats: a.room_unusable_seats || 0,
+            seats: [],
+          }).seats.push(a);
+          allSessions[k].end = Math.max(allSessions[k].end, a.end);
+        });
+        let matchingSessionKeys = new Set(
+          filtered.map(
+            (a) => `${a.room_id}|${a.date}|${a.subject}|${a.paper}|${a.start}`,
+          ),
+        );
+        let filteredSessions = Object.entries(allSessions)
+          .filter(([k]) => matchingSessionKeys.has(k))
+          .map(([, v]) => v);
+        let sessionRows = filteredSessions.slice(0, visibleCount);
+        let body =
+          view === "room"
+            ? `<div class="room-grid">${
+                sessionRows
+                  .map(
+                    (s) =>
+                      `<div class="card room-card"><div class="room-card-head"><div><strong>Room ${esc(s.room_id)}</strong><small>${esc(s.date)} · ${esc(s.subject)} ${esc(s.paper)} · ${clock(s.start)}–${clock(s.end)}</small></div><span class="badge valid">${s.seats.length} seated</span></div><div style="margin:-6px 0 12px;font-size:12px;color:#56645a">Proctor: <strong>${esc(s.seats[0]?.proctor_name || "Unassigned")}</strong></div><div class="seat-map">${Array.from(
+                        { length: Math.min(s.capacity, 60) },
+                        (_, i) => {
+                          let a = s.seats[i];
+                          return `<div class="seat ${a ? "occupied" : ""}" title="${a ? esc(a.candidate_name + " · " + a.candidate_id) : "Available seat"}">${a ? `S${String(a.seat).padStart(2, "0")}` : "·"}</div>`;
+                        },
+                      ).join(
+                        "",
+                      )}${s.capacity > 60 ? `<div class="seat">+${s.capacity - 60}</div>` : ""}</div><div class="seat-legend"><span><i class="legend-dot"></i>${s.capacity - s.seats.length} seats remaining</span><span><i class="legend-dot free"></i>${s.capacity} total capacity</span></div><div class="footer-note">${s.seats.map((a) => esc(a.candidate_name)).join(" · ")}</div></div>`,
+                  )
+                  .join("") ||
+                `<div class="card empty">No rooms match this search.</div>`
+              }</div>`
+            : `<div class="card"><div class="entry-row head"><span>Student / paper</span><span>Room / seat</span><span>Proctor</span><span>Time</span></div>${rows.map((a) => `<div class="entry-row"><span><strong>${esc(a.candidate_name)}</strong><small>${esc(a.candidate_id)} · ${esc(a.subject)} ${esc(a.paper)}</small></span><span>${esc(a.room_id || "Unassigned")}${a.seat ? ` · Seat ${a.seat}` : ""}</span><span>${esc(a.proctor_name)}<small>${esc(a.proctor_id || "")}</small></span><span>${esc(a.date)}<small>${a.start_time}–${clock(a.end)}</small></span></div>`).join("") || `<div class="empty">No entries match this search.</div>`}</div>`;
+        let count = view === "room" ? sessionRows.length : rows.length,
+          total = view === "room" ? filteredSessions.length : filtered.length;
+        return `<div class="eyebrow">ALLOCATION WORKSPACE · ${allocation.length} EXAM ENTRIES</div><h1>Room seating &amp; allocation</h1><p class="lead">Seat plans show occupied and available places for each room session. Search across room, student, or proctor.</p><div class="metric-row"><div class="card metric"><label>Entries allocated</label><strong>${allocation.length}</strong><span>Student paper sittings</span></div><div class="card metric"><label>Unresolved</label><strong>${unresolved.length}</strong><span>Needs coordinator review</span></div><div class="card metric"><label>Rooms in use</label><strong>${new Set(allocation.filter((a) => a.room_id).map((a) => a.room_id)).size}</strong><span>Reusable room resources</span></div><div class="card metric"><label>Schedule check</label><strong>${unresolved.length ? "Review" : "Pass"}</strong><span>Availability and conflicts</span></div></div>${roomUtilizationPanel()}${reserveControls()}${
+          unresolved.length
+            ? `<div class="card issues" style="margin-bottom:15px"><strong style="color:#954c45">Unresolved assignments</strong>${unresolved
+                .slice(0, 8)
+                .map(
+                  (a) =>
+                    `<div class="issue-line">${esc(a.candidate_name)} · ${esc(a.subject)}: ${a.student_conflict ? "overlapping student papers" : !a.room_id ? "no room available" : !a.proctor_id ? "no eligible proctor" : "equipment quantity unavailable"}</div>`,
+                )
+                .join(
+                  "",
+                )}${unresolved.length > 8 ? `<div class="issue-line">And ${unresolved.length - 8} more…</div>` : ""}</div>`
+            : ""
+        }<div class="section-head"><div><h2>Schedule</h2><p>Same-session candidates share a room and are assigned numbered seats.</p></div><div class="search-row"><input id="allocation-search" class="search-input" placeholder="Search room, student, proctor, or equipment" value="${esc(allocationSearch)}" oninput="searchAllocation(this.value)"></div></div><div class="section-head" style="margin-top:0"><div class="tabs"><button class="${view === "room" ? "on" : ""}" onclick="setView('room')">Room seating</button><button class="${view === "candidate" ? "on" : ""}" onclick="setView('candidate')">By candidate</button><button class="${view === "proctor" ? "on" : ""}" onclick="setView('proctor')">By proctor</button></div><span class="entry-count">Showing ${count} of ${total} ${view === "room" ? "room sessions" : "entries"}</span></div>${body}${total > visibleCount ? `<div class="pager"><button class="btn" onclick="showMore()">Show more (${Math.min(20, total - visibleCount)} more)</button></div>` : ""}<div class="tech-note"><strong>System:</strong> Flask REST API · Pandas CSV validation · Python allocation service · browser seat map. The allocation logic groups matching exam sessions, checks room capacity, candidate overlaps, proctor subject conflicts, availability windows and shared equipment quantities.</div><div class="actions"><button class="btn" onclick="go('data')">Manage data</button><button class="btn primary" onclick="generate()">Regenerate allocation</button></div>`;
+      }
+      async function generate() {
+        let issues = errors();
+        if (issues.length || !complete()) {
+          go("data");
+          return;
+        }
+        if (["http:", "https:"].includes(location.protocol)) {
+          try {
+            let response = await fetch("/api/allocate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(allocationOptions),
+              }),
+              result = await response.json();
+            if (!response.ok) {
+              let msg =
+                [result.error || "The Python API could not allocate this data.", result.detail ? `Diagnostic: ${result.detail}` : "", result.app_file ? `Running app: ${result.app_file}` : ""].filter(Boolean).join(" — ");
+              alert(msg);
+              return;
+            }
+            allocationMeta = result.meta || {};
+            allocation = result.entries.map((a) => ({
+              ...a,
+              start: a.start_minute,
+              end: a.end_minute,
+              equipment_ok: a.equipment_available,
+              student_conflict: a.candidate_conflict,
+              seat: a.seat,
+              assignment_status: a.assignment_status,
+              reason_codes: a.reason_codes || [],
+              equipment_status: a.equipment_status,
+              room_reason: a.room_reason,
+              proctor_reason: a.proctor_reason,
+            }));
+            visibleCount = 20;
+            allocationSearch = "";
+            view = "room";
+            page = "allocation";
+            render();
+            return;
+          } catch (e) {
+            window.apiReady = false;
+          }
+        }
+        generateLocal();
+      }
+      let appNotice = null;
+      function setNotice(message, type = "error") {
+        appNotice = {
+          message: String(message || "Something went wrong."),
+          type,
+        };
+      }
+      function clearNotice() {
+        appNotice = null;
+        render();
+      }
+      function parseCSV(text) {
+        if (!String(text).trim())
+          throw Error(
+            "The CSV file is empty. Add a header and at least one data row.",
+          );
+        const rows = [];
+        let row = [],
+          cell = "",
+          quoted = false,
+          line = 1,
+          rowLine = 1;
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i];
+          if (c === '"') {
+            if (quoted && text[i + 1] === '"') {
+              cell += '"';
+              i++;
+            } else quoted = !quoted;
+          } else if (c === "," && !quoted) {
+            row.push(cell.trim());
+            cell = "";
+          } else if ((c === "\n" || c === "\r") && !quoted) {
+            if (c === "\r" && text[i + 1] === "\n") i++;
+            row.push(cell.trim());
+            if (row.some((v) => v !== ""))
+              rows.push({ line: rowLine, values: row });
+            row = [];
+            cell = "";
+            line++;
+            rowLine = line;
+          } else {
+            cell += c;
+            if (c === "\n") line++;
+          }
+        }
+        if (quoted)
+          throw Error(
+            `CSV formatting error near line ${line}: a quoted field was not closed.`,
+          );
+        row.push(cell.trim());
+        if (row.some((v) => v !== ""))
+          rows.push({ line: rowLine, values: row });
+        if (!rows.length) throw Error("No header row was found.");
+        const headers = rows[0].values.map((v) =>
+          v.trim().toLowerCase().replace(/^\uFEFF/, ""),
+        );
+        if (headers.every((v) => !v))
+          throw Error("The first row must contain column names.");
+        const parseErrors = [];
+        const records = rows.slice(1).map((r) => {
+          if (r.values.length !== headers.length)
+            parseErrors.push({
+              row: r.line,
+              msg: `Expected ${headers.length} columns but found ${r.values.length}.`,
+            });
+          return Object.fromEntries(
+            headers.map((h, i) => [h, r.values[i] ?? ""]),
+          );
+        });
+        return { headers, records, parseErrors };
+      }
+      function errors() {
+        let all = [];
+        try {
+          all = validate();
+        } catch (e) {
+          return [{ row: 1, msg: `Table validation failed: ${e.message}` }];
+        }
+        for (const [key, d] of Object.entries(data)) {
+          if (!d) continue;
+          const issues = [...(d.parseErrors || []), ...(d.apiErrors || [])],
+            seen = new Set();
+          if (!d.records.length)
+            issues.push({
+              row: 2,
+              msg: "At least one data record is required.",
+            });
+          d.headers.forEach((h) => {
+            if (seen.has(h))
+              issues.push({ row: 1, msg: `Duplicate column name “${h}”.` });
+            seen.add(h);
+          });
+          d.errors = [...(d.errors || []), ...issues];
+          for (const issue of issues)
+            all.push({ ...issue, file: schemas[key]?.short || key });
+        }
+        return all;
+      }
+      function render() {
+        const label =
+          page === "setup"
+            ? "Overview"
+            : page === "data"
+              ? "Input data"
+              : "Allocation";
+        document.querySelector("#crumb").textContent = label;
+        document
+          .querySelectorAll(".nav button")
+          .forEach((b) => b.classList.remove("active"));
+        document
+          .querySelector("#nav-" + (page === "setup" ? "home" : page))
+          .classList.add("active");
+        try {
+          const body =
+            page === "setup"
+              ? setup()
+              : page === "data"
+                ? dataPage()
+                : allocationPage();
+          const banner = appNotice
+            ? `<div class="notice-box ${esc(appNotice.type)}" role="${appNotice.type === "error" ? "alert" : "status"}"><button aria-label="Dismiss message" onclick="clearNotice()">×</button>${esc(appNotice.message)}</div>`
+            : "";
+          app.innerHTML = banner + body;
+        } catch (e) {
+          console.error(e);
+          app.innerHTML = `<div class="eyebrow">RECOVERABLE ERROR</div><h1>This view could not be displayed.</h1><p class="lead">${esc(e.message || "An unexpected display error occurred.")}</p><div class="actions"><button class="btn" onclick="go('data')">Open input data</button><button class="btn primary" onclick="go('setup')">Return to overview</button></div>`;
+        }
+      }
+      function upload(k, file) {
+        if (!file) return;
+        if (!file.name.toLowerCase().endsWith(".csv")) {
+          setNotice(`Choose a CSV file for ${schemas[k].title}.`);
+          render();
+          return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          setNotice(
+            "This file exceeds the 10 MB upload limit. Split it into smaller CSV files.",
+          );
+          render();
+          return;
+        }
+        const reader = new FileReader();
+        reader.onerror = () => {
+          setNotice(
+            `Could not read ${file.name}. Save it again as a UTF-8 CSV and retry.`,
+          );
+          render();
+        };
+        reader.onabort = () => {
+          setNotice(
+            `Reading ${file.name} was interrupted. Choose the file again.`,
+          );
+          render();
+        };
+        reader.onload = async () => {
+          try {
+            const parsed = normalizeRoomData(k, parseCSV(reader.result));
+            if (!parsed.records.length)
+              throw Error("The CSV contains a header but no data rows.");
+            data[k] = {
+              ...parsed,
+              fileName: file.name,
+              errors: [],
+              apiErrors: [],
+            };
+            let issues = errors();
+            if (["http:", "https:"].includes(location.protocol)) {
+              try {
+                const fd = new FormData();
+                fd.append("file", file);
+                const response = await fetch(`/api/upload/${k === "exams" ? "students" : k}`, {
+                  method: "POST",
+                  body: fd,
+                });
+                const result = await response
+                  .json()
+                  .catch(() => ({
+                    error: "The server returned an unreadable response.",
+                  }));
+                if (!response.ok || result.issues?.length) {
+                  data[k].apiErrors = (result.issues || []).map((x) => ({
+                    row: x.row,
+                    msg: x.message,
+                  }));
+                  if (!data[k].apiErrors.length)
+                    data[k].apiErrors = [
+                      {
+                        row: 1,
+                        msg:
+                          [result.error || `Upload failed (${response.status}).`, result.detail ? `Diagnostic: ${result.detail}` : "", result.app_file ? `Running app: ${result.app_file}` : ""].filter(Boolean).join(" — "),
+                      },
+                    ];
+                  issues = errors();
+                }
+              } catch (e) {
+                setNotice(
+                  `Flask API connection failed (${e.message}). The file is available in browser mode; reconnect the server to use Python processing.`,
+                  "info",
+                );
+              }
+            }
+            if (issues.length)
+              setNotice(
+                `${file.name} loaded with ${issues.length} issue${issues.length === 1 ? "" : "s"}. Review the row details below.`,
+              );
+            else if (!appNotice)
+              setNotice(
+                `${file.name} loaded: ${parsed.records.length} rows.`,
+                "success",
+              );
+            render();
+          } catch (e) {
+            setNotice(`Could not load ${file.name}: ${e.message}`);
+            render();
+          }
+        };
+        reader.readAsText(file);
+      }
+      async function generate() {
+        try {
+          const problems = errors();
+          if (problems.length || !complete()) {
+            setNotice(
+              `Allocation paused. Fix ${problems.length || 4} data issue${(problems.length || 4) === 1 ? "" : "s"} and try again.`,
+            );
+            go("data");
+            return;
+          }
+          if (["http:", "https:"].includes(location.protocol)) {
+            try {
+              const response = await fetch("/api/allocate", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(allocationOptions),
+                }),
+                result = await response
+                  .json()
+                  .catch(() => ({
+                    error: "The server returned an unreadable response.",
+                  }));
+              if (!response.ok) {
+                const details = Object.values(result.issues || {})
+                  .flat()
+                  .map((x) => x.message)
+                  .filter(Boolean);
+                setNotice(
+                  [
+                    [result.error || `Allocation failed (${response.status}).`, result.detail ? `Diagnostic: ${result.detail}` : "", result.app_file ? `Running app: ${result.app_file}` : ""].filter(Boolean).join(" — "),
+                    ...details,
+                  ].join(" "),
+                );
+                go(response.status === 422 ? "data" : "setup");
+                return;
+              }
+              allocationMeta = result.meta || {};
+              allocation = result.entries.map((a) => ({
+                ...a,
+                start: a.start_minute,
+                end: a.end_minute,
+                equipment_ok: a.equipment_available,
+                student_conflict: a.candidate_conflict,
+                seat: a.seat,
+                assignment_status: a.assignment_status,
+                reason_codes: a.reason_codes || [],
+                equipment_status: a.equipment_status,
+                room_reason: a.room_reason,
+                proctor_reason: a.proctor_reason,
+              }));
+              visibleCount = 20;
+              allocationSearch = "";
+              view = "room";
+              page = "allocation";
+              appNotice =
+                result.unresolved_count ||
+                result.meta?.independent_check_issues?.length
+                  ? {
+                      message: `Allocation completed with ${result.unresolved_count} unresolved entries. Review the warnings.`,
+                      type: "error",
+                    }
+                  : {
+                      message:
+                        "Allocation completed and passed the current checks.",
+                      type: "success",
+                    };
+              render();
+              return;
+            } catch (e) {
+              setNotice(
+                `Flask allocation service unavailable (${e.message}). Start app.py and open this page through http://127.0.0.1:5000 so the validated Python allocation engine can run.`,
+                "error",
+              );
+              render();
+              return;
+            }
+          }
+          generateLocal();
+        } catch (e) {
+          console.error(e);
+          setNotice(
+            `Allocation failed: ${e.message || "unexpected processing error"}. Check the input tables and retry.`,
+          );
+          render();
+        }
+      }
+      window.addEventListener("error", (e) => {
+        console.error(e.error || e.message);
+        setNotice(
+          `Page error: ${e.message || "unexpected browser error"}. Return to Overview and retry.`,
+        );
+        render();
+      });
+      window.addEventListener("unhandledrejection", (e) => {
+        console.error(e.reason);
+        setNotice(
+          `Background request failed: ${e.reason?.message || "unexpected network error"}. Please retry.`,
+        );
+        render();
+      });
+      let allocationOptions = {
+          reserve_room: true,
+          reserve_proctor: true,
+          reserve_equipment: true,
+        },
+        allocationMeta = {};
+      let validHistory = {},
+        dataLimit = {},
+        dataSearch = {},
+        calendarScope = "room",
+        calendarResource = "",
+        calendarAnchor = "",
+        reportConfig = {
+          title: "Examination schedule",
+          intro: "",
+          scope: "all",
+          resource: "",
+          from: "",
+          to: "",
+          room: true,
+          proctor: true,
+          equipment: true,
+          warnings: true,
+        };
+      function snapshot(v) {
+        return JSON.parse(JSON.stringify(v));
+      }
+      function tableSignature(d) {
+        return JSON.stringify({ headers: d.headers, records: d.records });
+      }
+      function rememberValidTables() {
+        for (const [k, d] of Object.entries(data)) {
+          if (!d) continue;
+          const h = (validHistory[k] ??= []);
+          if (
+            !h.length ||
+            tableSignature(h[h.length - 1]) !== tableSignature(d)
+          ) {
+            h.push(snapshot(d));
+            if (h.length > 12) h.shift();
+          }
+        }
+      }
+      function upload(k, file) {
+        if (!file) return;
+        if (!file.name.toLowerCase().endsWith(".csv")) {
+          setNotice(`Choose a CSV file for ${schemas[k].title}.`);
+          render();
+          return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          setNotice(
+            "This file exceeds the 10 MB upload limit. Split it into smaller CSV files.",
+          );
+          render();
+          return;
+        }
+        const reader = new FileReader();
+        reader.onerror = () => {
+          setNotice(
+            `Could not read ${file.name}. Save it again as a UTF-8 CSV and retry.`,
+          );
+          render();
+        };
+        reader.onabort = () => {
+          setNotice(
+            `Reading ${file.name} was interrupted. Choose the file again.`,
+          );
+          render();
+        };
+        reader.onload = async () => {
+          try {
+            const parsed = normalizeRoomData(k, parseCSV(reader.result));
+            if (!parsed.records.length)
+              throw Error("The CSV contains a header but no data rows.");
+            data[k] = {
+              ...parsed,
+              fileName: file.name,
+              errors: [],
+              apiErrors: [],
+            };
+            allocation = [];
+            let issues = errors();
+            if (["http:", "https:"].includes(location.protocol)) {
+              try {
+                const fd = new FormData();
+                fd.append("file", file);
+                const response = await fetch(`/api/upload/${k === "exams" ? "students" : k}`, {
+                    method: "POST",
+                    body: fd,
+                  }),
+                  result = await response
+                    .json()
+                    .catch(() => ({
+                      error: "The server returned an unreadable response.",
+                    }));
+                if (!response.ok || result.issues?.length) {
+                  data[k].apiErrors = (result.issues || []).map((x) => ({
+                    row: x.row,
+                    msg: x.message,
+                  }));
+                  if (!data[k].apiErrors.length)
+                    data[k].apiErrors = [
+                      {
+                        row: 1,
+                        msg:
+                          [result.error || `Upload failed (${response.status}).`, result.detail ? `Diagnostic: ${result.detail}` : "", result.app_file ? `Running app: ${result.app_file}` : ""].filter(Boolean).join(" — "),
+                      },
+                    ];
+                  issues = errors();
+                }
+              } catch (e) {
+                setNotice(
+                  `Flask API connection failed (${e.message}). The file is loaded in browser mode; reconnect the server to use Python processing.`,
+                  "info",
+                );
+              }
+            }
+            if (issues.length)
+              setNotice(
+                `${file.name} loaded with ${issues.length} issue${issues.length === 1 ? "" : "s"}. Review the row details below.`,
+              );
+            else {
+              rememberValidTables();
+              if (!appNotice)
+                setNotice(
+                  `${file.name} loaded and validated: ${parsed.records.length} rows.`,
+                  "success",
+                );
+            }
+            render();
+          } catch (e) {
+            setNotice(`Could not load ${file.name}: ${e.message}`);
+            render();
+          }
+        };
+        reader.readAsText(file);
+      }
+      function quoteCSV(v) {
+        const s = String(v ?? "");
+        return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }
+      function csvFor(k) {
+        const d = data[k];
+        return (
+          [
+            d.headers.map(quoteCSV).join(","),
+            ...d.records.map((r) =>
+              d.headers.map((h) => quoteCSV(r[h])).join(","),
+            ),
+          ].join("\r\n") + "\r\n"
+        );
+      }
+      async function submitTableToAPI(k) {
+        if (location.protocol !== "http:") return true;
+        const blob = new Blob([csvFor(k)], { type: "text/csv" }),
+          fd = new FormData();
+        fd.append(
+          "file",
+          blob,
+          (data[k].fileName || `${k}.csv`).replace(/[^\w.-]/g, "_"),
+        );
+        let response = await fetch(`/api/upload/${k === "exams" ? "students" : k}`, {
+            method: "POST",
+            body: fd,
+          }),
+          result = await response
+            .json()
+            .catch(() => ({
+              error: "The server returned an unreadable response.",
+            }));
+        if (!response.ok || !result.valid) {
+          data[k].apiErrors = (result.issues || []).map((x) => ({
+            row: x.row,
+            msg: x.message,
+          }));
+          if (!data[k].apiErrors.length)
+            data[k].apiErrors = [
+              {
+                row: 1,
+                msg:
+                  [result.error || `Server validation failed (${response.status}).`, result.detail ? `Diagnostic: ${result.detail}` : "", result.app_file ? `Running app: ${result.app_file}` : ""].filter(Boolean).join(" — "),
+              },
+            ];
+          return false;
+        }
+        data[k].apiErrors = [];
+        return true;
+      }
+      async function validateAndSubmit(k) {
+        try {
+          if (!data[k]) return;
+          data[k].apiErrors = [];
+          const issues = errors();
+          if (issues.length) {
+            setNotice(
+              `Changes were not submitted: ${issues.length} issue${issues.length === 1 ? "" : "s"} need correction. See the row-level details.`,
+            );
+            page = "data";
+            render();
+            return;
+          }
+          if (!(await submitTableToAPI(k))) {
+            const now = errors();
+            setNotice(
+              `The Flask API rejected the changed ${schemas[k].short.toLowerCase()} table. Review its validation details and try again.`,
+            );
+            page = "data";
+            render();
+            return;
+          }
+          rememberValidTables();
+          allocation = [];
+          setNotice(
+            `${schemas[k].title} passed validation and was submitted. A previous valid version is available to restore.`,
+            "success",
+          );
+          page = "data";
+          render();
+        } catch (e) {
+          setNotice(
+            `Could not validate or submit this table: ${e.message || "unexpected error"}. Your previous valid copy is preserved.`,
+          );
+          render();
+        }
+      }
+      function restoreValid(k) {
+        const hist = validHistory[k] || [],
+          draft = data[k],
+          hasIssues = !!draft?.errors?.length;
+        if (hasIssues && hist.length) {
+          data[k] = snapshot(hist[hist.length - 1]);
+          data[k].apiErrors = [];
+          setNotice(
+            `Restored the latest valid ${schemas[k].short.toLowerCase()} version.`,
+            "success",
+          );
+        } else if (hist.length > 1) {
+          hist.pop();
+          data[k] = snapshot(hist[hist.length - 1]);
+          data[k].apiErrors = [];
+          setNotice(
+            `Restored the previous valid ${schemas[k].short.toLowerCase()} version.`,
+            "success",
+          );
+        } else {
+          setNotice(
+            "There is no earlier valid version to restore yet. Make and validate a change first.",
+            "info",
+          );
+          return;
+        }
+        allocation = [];
+        if (["http:", "https:"].includes(location.protocol))
+          submitTableToAPI(k).catch((e) =>
+            setNotice(
+              `Restored locally, but the server could not be updated: ${e.message}`,
+              "error",
+            ),
+          );
+        render();
+      }
+      function editRow(k, i) {
+        const d = data[k],
+          r = d.records[i];
+        document.querySelector("#modal-root").innerHTML =
+          `<div class="modal-backdrop" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modal-head"><div><div class="eyebrow">EDIT SOURCE RECORD · ROW ${i + 2}</div><h2>${esc(schemas[k].short)}</h2></div><button onclick="closeModal()" aria-label="Close">×</button></div><form id="edit-form" onsubmit="event.preventDefault();saveEditedRow('${k}',${i})"><div class="form-grid">${d.headers.map((h) => `<label class="field">${esc(h)}<input name="${esc(h)}" value="${esc(r[h])}" autocomplete="off"></label>`).join("")}</div><div class="actions"><button type="button" class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" type="submit">Validate &amp; submit changes</button></div><p class="footer-note">Your last valid version is saved so you can revert after reviewing this change.</p></form></div></div>`;
+      }
+      async function saveEditedRow(k, i) {
+        const form = document.querySelector("#edit-form");
+        if (!form) return;
+        const fd = new FormData(form),
+          next = {};
+        data[k].headers.forEach(
+          (h) => (next[h] = String(fd.get(h) || "").trim()),
+        );
+        data[k].records[i] = next;
+        data[k].apiErrors = [];
+        allocation = [];
+        closeModal();
+        await validateAndSubmit(k);
+      }
+      function searchData(k, v) {
+        dataSearch[k] = v;
+        dataLimit[k] = 20;
+        render();
+        const e = document.querySelector(`#data-search-${k}`);
+        if (e) {
+          e.focus();
+          e.setSelectionRange(v.length, v.length);
+        }
+      }
+      function dataPage() {
+        errors();
+        return `<div class="eyebrow">INPUT DATA</div><h1>Manage and correct your data</h1><p class="lead">Edit individual records, validate and submit changes, then restore a previous valid version if needed.</p><div class="grid">${Object.entries(
+          schemas,
+        )
+          .map(([k, s]) => uploadCard(k, s))
+          .join(
+            "",
+          )}</div><div class="section-head"><div><h2>Tables and validation</h2><p>Changes are checked before they replace the last accepted version.</p></div><button class="btn" onclick="showSchema()">CSV format</button></div>${
+          Object.keys(data).length
+            ? Object.entries(schemas)
+                .filter(([k]) => data[k])
+                .map(([k, s]) => {
+                  const d = data[k],
+                    errs = d.errors || [],
+                    q = (dataSearch[k] || "").toLowerCase(),
+                    matches = d.records
+                      .map((r, i) => ({ r, i }))
+                      .filter(
+                        (x) =>
+                          !q ||
+                          Object.values(x.r).some((v) =>
+                            String(v).toLowerCase().includes(q),
+                          ),
+                      ),
+                    limit = dataLimit[k] || 20;
+                  return `<div class="card" style="margin-bottom:14px"><div style="padding:15px 17px;display:flex;align-items:center;justify-content:space-between;gap:10px"><div><strong>${esc(s.title)}</strong><div class="footer-note">${d.records.length} rows · ${esc(d.fileName || "Edited table")} · ${validHistory[k]?.length || 0} valid version${(validHistory[k]?.length || 0) === 1 ? "" : "s"}</div></div><span class="badge ${errs.length ? "error" : "valid"}">${errs.length ? `${errs.length} issue${errs.length === 1 ? "" : "s"}` : "Valid"}</span></div>${
+                    errs.length
+                      ? `<div class="card issues" style="margin:0 14px 12px;padding:11px 14px">${errs
+                          .slice(0, 8)
+                          .map(
+                            (e) =>
+                              `<div class="issue-line">Row ${e.row}: ${esc(e.msg)}</div>`,
+                          )
+                          .join(
+                            "",
+                          )}${errs.length > 8 ? `<div class="issue-line">${errs.length - 8} more issue(s).</div>` : ""}</div>`
+                      : ""
+                  }<div class="section-head" style="margin:0;padding:0 14px 10px"><input class="search-input" placeholder="Find a record" value="${esc(dataSearch[k] || "")}" id="data-search-${k}" oninput="searchData('${k}',this.value)"><div style="display:flex;gap:7px"><button class="btn" onclick="addRow('${k}')">Add record</button><button class="btn" onclick="downloadEditedCSV('${k}')">Download CSV</button><button class="btn" onclick="validateAndSubmit('${k}')">Validate &amp; submit</button><button class="btn" onclick="restoreValid('${k}')" ${!validHistory[k]?.length || (validHistory[k].length < 2 && !errs.length) ? "disabled" : ""}>${errs.length ? "Restore last valid" : "Restore previous valid"}</button></div></div><div class="table-wrap"><table class="data-table"><thead><tr>${d.headers.map((h) => `<th>${esc(h)}</th>`).join("")}<th>Action</th></tr></thead><tbody>${matches
+                    .slice(0, limit)
+                    .map(
+                      ({ r, i }) =>
+                        `<tr>${d.headers.map((h) => `<td>${esc(r[h])}</td>`).join("")}<td><button class="entry-edit" onclick="editRow('${k}',${i})">Edit</button> <button class="entry-edit" style="color:#a64640;background:#fff1ef" onclick="deleteRow('${k}',${i})">Delete</button></td></tr>`,
+                    )
+                    .join(
+                      "",
+                    )}</tbody></table></div>${matches.length > limit ? `<div class="pager"><button class="btn" onclick="dataLimit['${k}']=${limit + 20};render()">Show 20 more (${matches.length - limit} remaining)</button></div>` : ""}</div>`;
+                })
+                .join("")
+            : `<div class="card empty">Upload a CSV above to view and edit its records.</div>`
+        }<div class="actions"><button class="btn primary" onclick="go('setup')">Back to overview</button></div>`;
+      }
+      function localISO(d) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      }
+      function shiftISO(iso, n) {
+        const d = new Date((iso || localISO(new Date())) + "T12:00:00");
+        d.setDate(d.getDate() + n);
+        return localISO(d);
+      }
+      function mondayISO(iso) {
+        const d = new Date(iso + "T12:00:00");
+        const offset = (d.getDay() + 6) % 7;
+        d.setDate(d.getDate() - offset);
+        return localISO(d);
+      }
+      function prettyDay(iso) {
+        return new Date(iso + "T12:00:00").toLocaleDateString(undefined, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        });
+      }
+      function calendarSessions(scope, source) {
+        const matching = source.filter((x) =>
+          scope === "room"
+            ? x.room_id === calendarResource
+            : scope === "student"
+              ? x.candidate_id === calendarResource
+              : x.proctor_id === calendarResource,
+        );
+        if (scope === "student") return matching;
+        const groups = new Map();
+        for (const row of matching) {
+          const key = [
+            row.date,
+            row.start_time,
+            row.subject,
+            row.paper,
+            row.room_id || "",
+            row.proctor_id || "",
+          ].join("|");
+          let group = groups.get(key);
+          if (!group) {
+            group = {
+              ...row,
+              end: Number(
+                row.end ??
+                  min(row.start_time) +
+                    Number(row.duration_min) +
+                    Number(row.extra_time_min || 0),
+              ),
+              studentNames: [],
+              studentCount: 0,
+              equipmentTypes: new Set(),
+            };
+            groups.set(key, group);
+          }
+          group.end = Math.max(
+            group.end,
+            Number(
+              row.end ??
+                min(row.start_time) +
+                  Number(row.duration_min) +
+                  Number(row.extra_time_min || 0),
+            ),
+          );
+          group.studentNames.push(row.candidate_name);
+          group.studentCount++;
+          if (row.equipment && row.equipment !== "none")
+            group.equipmentTypes.add(row.equipment);
+        }
+        return [...groups.values()].map((x) => ({
+          ...x,
+          equipment: [...x.equipmentTypes].join(", "),
+        }));
+      }
+      function calendarPage() {
+        errors();
+        if (!calendarAnchor) {
+          const firstValid = (data.exams?.records || [])
+            .map((x) => x.date)
+            .find(
+              (x) => /^\d{4}-\d{2}-\d{2}$/.test(x) && !isNaN(Date.parse(x)),
+            );
+          calendarAnchor = firstValid || localISO(new Date());
+        }
+        const anchor = mondayISO(calendarAnchor),
+          dates = Array.from({ length: 7 }, (_, i) => shiftISO(anchor, i));
+        let options = [];
+        if (calendarScope === "room")
+          options = (data.rooms?.records || []).map((x) => [
+            x.room_id,
+            x.room_id,
+          ]);
+        if (calendarScope === "student") {
+          const found = new Map();
+          (data.exams?.records || []).forEach((x) =>
+            found.set(
+              x.candidate_id,
+              `${x.candidate_name} · ${x.candidate_id}`,
+            ),
+          );
+          options = [...found.entries()];
+        }
+        if (calendarScope === "proctor")
+          options = (data.proctors?.records || []).map((x) => [
+            x.proctor_id,
+            `${x.proctor_name} · ${x.proctor_id}`,
+          ]);
+        if (
+          !calendarResource ||
+          !options.some((x) => x[0] === calendarResource)
+        )
+          calendarResource = options[0]?.[0] || "";
+        const source = allocation.length
+          ? allocation
+          : (data.exams?.records || []).map((x) => ({
+              ...x,
+              room_id: "",
+              proctor_id: "",
+              proctor_name: "Unassigned",
+              start: min(x.start_time),
+              end:
+                min(x.start_time) +
+                Number(x.duration_min) +
+                Number(x.extra_time_min || 0),
+            }));
+        const available = calendarScope === "student" || allocation.length > 0,
+          chosen = calendarSessions(calendarScope, source);
+        return `<div class="eyebrow">PERSONALIZED SCHEDULES</div><h1>Calendar views</h1><p class="lead">Choose a room, student, or proctor to see that resource’s schedule. Room and proctor calendars use the final room booking times, including extra time.</p><div class="card" style="padding:17px;margin-bottom:15px"><div class="calendar-toolbar"><label class="field">Calendar for<select onchange="calendarScope=this.value;calendarResource='';render()"><option value="room" ${calendarScope === "room" ? "selected" : ""}>Room</option><option value="student" ${calendarScope === "student" ? "selected" : ""}>Student</option><option value="proctor" ${calendarScope === "proctor" ? "selected" : ""}>Proctor</option></select></label><label class="field">Select ${calendarScope}<select onchange="calendarResource=this.value;render()">${options.map(([v, l]) => `<option value="${esc(v)}" ${v === calendarResource ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></label><label class="field">Week containing<input type="date" value="${esc(calendarAnchor)}" onchange="calendarAnchor=this.value;render()"></label><button class="btn" onclick="calendarAnchor=shiftISO(calendarAnchor,-7);render()">← Previous</button><button class="btn" onclick="calendarAnchor=shiftISO(calendarAnchor,7);render()">Next →</button></div></div>${
+          !available
+            ? `<div class="hint">Generate an allocation before viewing room bookings or proctor duties. Student calendars are available from the examination table.</div>`
+            : !calendarResource
+              ? `<div class="card empty">Upload the ${calendarScope} table to choose a calendar.</div>`
+              : `<div class="calendar-week">${dates
+                  .map((day) => {
+                    const rows = chosen
+                      .filter((x) => x.date === day)
+                      .sort(
+                        (a, b) =>
+                          Number(a.start ?? min(a.start_time)) -
+                          Number(b.start ?? min(b.start_time)),
+                      );
+                    return `<section class="cal-day"><div class="cal-day-head">${prettyDay(day)}<small>${rows.length} event${rows.length === 1 ? "" : "s"}</small></div>${rows.map((x) => `<div class="cal-event"><strong>${esc(x.start_time)}–${clock(x.end ?? min(x.start_time) + Number(x.duration_min) + Number(x.extra_time_min || 0))} · ${esc(x.subject)} ${esc(x.paper)}</strong>${calendarScope === "room" ? `${esc(x.studentNames?.join(", ") || x.candidate_name)} · ${x.studentCount || 1} seated<br><b>Proctor: ${esc(x.proctor_name || "Unassigned")}</b>` : calendarScope === "student" ? `Room ${esc(x.room_id || "Not assigned")} · Proctor ${esc(x.proctor_name || "Not assigned")}${x.assignment_status && x.assignment_status !== "allocated" ? "<br><b>Assignment needs review</b>" : ""}` : `${esc(x.studentNames?.join(", ") || x.candidate_name)} · ${x.studentCount || 1} candidate(s)<br>Room ${esc(x.room_id || "Not assigned")}`}${x.equipment ? `<br>Equipment: ${esc(x.equipment)}` : ""}</div>`).join("") || `<div class="footer-note">No sessions this day</div>`}</section>`;
+                  })
+                  .join("")}</div>`
+        }<div class="actions"><button class="btn" onclick="exportCalendar()">Download this week (.ics)</button><button class="btn" onclick="go('allocation')">Open allocation</button></div>`;
+      }
+      function getReportRows() {
+        const raw = allocation.length ? allocation : data.exams?.records || [];
+        return raw.filter(
+          (x) =>
+            (!reportConfig.from || x.date >= reportConfig.from) &&
+            (!reportConfig.to || x.date <= reportConfig.to) &&
+            (!reportConfig.scope ||
+              reportConfig.scope === "all" ||
+              (reportConfig.scope === "room"
+                ? x.room_id === reportConfig.resource
+                : reportConfig.scope === "student"
+                  ? x.candidate_id === reportConfig.resource
+                  : x.proctor_id === reportConfig.resource)),
+        );
+      }
+      function reportText() {
+        const rows = getReportRows(),
+          out = [
+            reportConfig.title || "Examination schedule",
+            reportConfig.intro || "",
+            `Scope: ${reportConfig.scope === "all" ? "All records" : reportConfig.resource || reportConfig.scope} · ${reportConfig.from || "any date"} to ${reportConfig.to || "any date"}`,
+            `Entries: ${rows.length}`,
+            ``,
+          ];
+        rows.forEach((x) => {
+          let line = `${x.date} ${x.start_time}–${clock(x.end || min(x.start_time) + Number(x.duration_min) + Number(x.extra_time_min || 0))} | ${x.candidate_name} (${x.candidate_id}) | ${x.subject} ${x.paper}`;
+          if (reportConfig.room)
+            line += ` | Room ${x.room_id || "Unassigned"}${x.seat ? ` seat ${x.seat}` : ""}`;
+          if (reportConfig.proctor)
+            line += ` | Proctor ${x.proctor_name || "Unassigned"}`;
+          if (reportConfig.equipment && x.equipment && x.equipment !== "none")
+            line += ` | Equipment ${x.equipment}`;
+          if (
+            reportConfig.warnings &&
+            (!x.room_id ||
+              !x.proctor_id ||
+              x.equipment_ok === false ||
+              x.student_conflict)
+          )
+            line += " | REVIEW REQUIRED";
+          out.push(line);
+        });
+        return out.join("\n");
+      }
+      function reportPage() {
+        errors();
+        const opts =
+          reportConfig.scope === "room"
+            ? (data.rooms?.records || []).map((x) => [x.room_id, x.room_id])
+            : reportConfig.scope === "student"
+              ? [
+                  ...new Map(
+                    (data.exams?.records || []).map((x) => [
+                      x.candidate_id,
+                      [
+                        x.candidate_id,
+                        `${x.candidate_name} · ${x.candidate_id}`,
+                      ],
+                    ]),
+                  ).values(),
+                ]
+              : reportConfig.scope === "proctor"
+                ? (data.proctors?.records || []).map((x) => [
+                    x.proctor_id,
+                    `${x.proctor_name} · ${x.proctor_id}`,
+                  ])
+                : [];
+        if (!reportConfig.from)
+          reportConfig.from =
+            data.exams?.records?.map((x) => x.date).sort()[0] || "";
+        if (!reportConfig.to)
+          reportConfig.to =
+            data.exams?.records
+              ?.map((x) => x.date)
+              .sort()
+              .slice(-1)[0] || "";
+        const preview = reportText();
+        return `<div class="eyebrow">REPORTS &amp; COMMUNICATION</div><h1>Custom reports and email</h1><p class="lead">Choose the audience, date range, fields, and notes. Preview, download, print, or open an email draft.</p><div class="grid"><div class="card" style="padding:18px"><h2>Report settings</h2><div class="form-grid"><label class="field">Report title<input value="${esc(reportConfig.title)}" oninput="reportConfig.title=this.value;refreshReportPreview()"></label><label class="field">Scope<select onchange="reportConfig.scope=this.value;reportConfig.resource='';render()"><option value="all" ${reportConfig.scope === "all" ? "selected" : ""}>All entries</option><option value="room" ${reportConfig.scope === "room" ? "selected" : ""}>One room</option><option value="student" ${reportConfig.scope === "student" ? "selected" : ""}>One student</option><option value="proctor" ${reportConfig.scope === "proctor" ? "selected" : ""}>One proctor</option></select></label>${reportConfig.scope !== "all" ? `<label class="field">Resource<select onchange="reportConfig.resource=this.value;refreshReportPreview()">${opts.map(([v, l]) => `<option value="${esc(v)}" ${v === reportConfig.resource ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></label>` : ""}<label class="field">From<input type="date" value="${esc(reportConfig.from)}" onchange="reportConfig.from=this.value;refreshReportPreview()"></label><label class="field">To<input type="date" value="${esc(reportConfig.to)}" onchange="reportConfig.to=this.value;refreshReportPreview()"></label><label class="field" style="grid-column:1/-1">Intro or custom note<textarea rows="3" oninput="reportConfig.intro=this.value;refreshReportPreview()">${esc(reportConfig.intro)}</textarea></label></div><div class="check-options" style="margin:15px 0">${[
+          ["room", "Room & seat"],
+          ["proctor", "Proctor"],
+          ["equipment", "Equipment"],
+          ["warnings", "Warnings"],
+        ]
+          .map(
+            ([k, l]) =>
+              `<label><input type="checkbox" ${reportConfig[k] ? "checked" : ""} onchange="reportConfig['${k}']=this.checked;refreshReportPreview()">${l}</label>`,
+          )
+          .join(
+            "",
+          )}</div><div class="actions"><button class="btn" onclick="downloadReport()">Download CSV</button><button class="btn" onclick="printReport()">Print / Save PDF</button></div></div><div class="card" style="padding:18px"><h2>Report preview</h2><div id="report-preview" class="report-preview">${esc(preview)}</div><div style="margin-top:18px"><h3>Email this report</h3><div class="form-grid"><label class="field">Recipient email<input type="email" id="email-to" placeholder="coordinator@example.org"></label><label class="field">Subject<input id="email-subject" value="${esc(reportConfig.title)}"></label><label class="field" style="grid-column:1/-1">Personal message<textarea id="email-message" rows="3" placeholder="Add a message for the recipient"></textarea></label></div><div class="actions"><button class="btn primary" onclick="openEmailDraft()">Open email draft</button></div><p class="footer-note">Your default email app opens with the report text and message ready to review. You choose whether to send it.</p></div></div></div>`;
+      }
+      function refreshReportPreview() {
+        const el = document.querySelector("#report-preview");
+        if (el) el.textContent = reportText();
+      }
+      function downloadBlob(name, content, type) {
+        const a = document.createElement("a"),
+          url = URL.createObjectURL(new Blob([content], { type }));
+        a.href = url;
+        a.download = name;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+      function downloadReport() {
+        const rows = getReportRows(),
+          headers = [
+            "date",
+            "start_time",
+            "candidate_id",
+            "candidate_name",
+            "subject",
+            "paper",
+            ...(reportConfig.room ? ["room_id", "seat"] : []),
+            ...(reportConfig.proctor ? ["proctor_id", "proctor_name"] : []),
+            ...(reportConfig.equipment ? ["equipment"] : []),
+            ...(reportConfig.warnings ? ["warnings"] : []),
+          ];
+        downloadBlob(
+          "exam-report.csv",
+          [
+            headers.join(","),
+            ...rows.map((r) =>
+              headers
+                .map((h) =>
+                  quoteCSV(
+                    h === "warnings"
+                      ? !r.room_id ||
+                        !r.proctor_id ||
+                        r.equipment_ok === false ||
+                        r.student_conflict
+                        ? "REVIEW REQUIRED"
+                        : ""
+                      : r[h],
+                  ),
+                )
+                .join(","),
+            ),
+          ].join("\r\n") + "\r\n",
+          "text/csv",
+        );
+        setNotice("Custom report downloaded as CSV.", "success");
+        render();
+      }
+      function printReport() {
+        const w = window.open("", "_blank");
+        if (!w) {
+          setNotice(
+            "Your browser blocked the print window. Allow pop-ups for this page, then try again.",
+          );
+          render();
+          return;
+        }
+        w.document.write(
+          `<html><head><title>${esc(reportConfig.title)}</title><style>body{font:14px Arial;margin:36px;white-space:pre-wrap}h1{font-size:22px}</style></head><body><h1>${esc(reportConfig.title)}</h1><pre>${esc(reportText())}</pre><script>window.onload=()=>window.print()<\/script></body></html>`,
+        );
+        w.document.close();
+      }
+      function openEmailDraft() {
+        const to = document.querySelector("#email-to")?.value.trim() || "";
+        if (!to || !to.includes("@")) {
+          setNotice(
+            "Enter a valid recipient email address before opening the draft.",
+          );
+          render();
+          return;
+        }
+        const subj =
+            document.querySelector("#email-subject")?.value ||
+            reportConfig.title,
+          msg = document.querySelector("#email-message")?.value || "",
+          body = (msg ? msg + "\n\n" : "") + reportText();
+        if (body.length > 12000) {
+          setNotice(
+            "This email draft is too long for a mail link. Narrow the report scope or date range and try again.",
+          );
+          return;
+        }
+        window.location.href = `mailto:${encodeURIComponent(to).replace(/%40/g, "@")}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+      }
+      function addWorkspaceNav() {
+        const nav = document.querySelector(".nav");
+        if (document.querySelector("#nav-calendar")) return;
+        nav.insertAdjacentHTML(
+          "beforeend",
+          '<button id="nav-calendar"><span class="nav-icon">▦</span><span class="nav-label">Calendars</span></button><button id="nav-reports"><span class="nav-icon">✉</span><span class="nav-label">Reports & email</span></button>',
+        );
+        document.querySelector("#nav-calendar").onclick = () => go("calendar");
+        document.querySelector("#nav-reports").onclick = () => go("reports");
+      }
+      function render() {
+        addWorkspaceNav();
+        const labels = {
+          setup: "Overview",
+          data: "Input data",
+          allocation: "Allocation",
+          calendar: "Calendars",
+          reports: "Reports & email",
+        };
+        document.querySelector("#crumb").textContent =
+          labels[page] || "Overview";
+        document
+          .querySelectorAll(".nav button")
+          .forEach((b) => b.classList.remove("active"));
+        const ids = {
+          setup: "home",
+          data: "data",
+          allocation: "allocation",
+          calendar: "calendar",
+          reports: "reports",
+        };
+        document
+          .querySelector("#nav-" + (ids[page] || "home"))
+          .classList.add("active");
+        try {
+          const body =
+            page === "setup"
+              ? setup()
+              : page === "data"
+                ? dataPage()
+                : page === "allocation"
+                  ? allocationPage()
+                  : page === "calendar"
+                    ? calendarPage()
+                    : reportPage();
+          const banner = appNotice
+            ? `<div class="notice-box ${esc(appNotice.type)}" role="${appNotice.type === "error" ? "alert" : "status"}"><button aria-label="Dismiss message" onclick="clearNotice()">×</button>${esc(appNotice.message)}</div>`
+            : "";
+          app.innerHTML = banner + body;
+        } catch (e) {
+          console.error(e);
+          app.innerHTML = `<div class="eyebrow">RECOVERABLE ERROR</div><h1>This view could not be displayed.</h1><p class="lead">${esc(e.message || "Unexpected display error.")}</p><div class="actions"><button class="btn" onclick="go('data')">Open input data</button><button class="btn primary" onclick="go('setup')">Return to overview</button></div>`;
+        }
+      }
+      function generateLocal() {
+        try {
+          const usesAdvancedArrangements = (data.exams?.records || []).some((row) =>
+            Number(row.extra_time_min || 0) > 0 ||
+            Number(row.rest_break_min || 0) > 0 ||
+            ["1", "true", "yes", "y", "required"].includes(String(row.separate_room || "").trim().toLowerCase()) ||
+            !!String(row.required_room_type || "").trim() ||
+            ["1", "true", "yes", "y", "required"].includes(String(row.reader || "").trim().toLowerCase()) ||
+            ["1", "true", "yes", "y", "required"].includes(String(row.scribe || "").trim().toLowerCase())
+          );
+          if (usesAdvancedArrangements) {
+            setNotice("This browser-only preview cannot safely enforce individual extra time, rest-break, separate-room, room-type, reader or scribe requirements. Run the site through Flask so the Python allocation engine can enforce them.", "error");
+            render();
+            return;
+          }
+          const problems = errors();
+          if (problems.length || !complete()) {
+            setNotice(
+              `Allocation paused. Fix ${problems.length || 4} data issue(s) first.`,
+            );
+            go("data");
+            return;
+          }
+          const exams = data.exams.records.map((r, i) => ({
+            ...r,
+            _index: i,
+            start: min(r.start_time),
+            end:
+              min(r.start_time) +
+              Number(r.duration_min) +
+              Number(r.extra_time_min || 0) + Number(r.rest_break_min || 0),
+            room_id: null,
+            room_capacity: 0,
+            seat: null,
+            proctor_id: null,
+            proctor_name: "Unassigned",
+            equipment_available: true,
+            equipment_status: "not_required",
+            candidate_conflict: false,
+            reason_codes: [],
+            assignment_status: "unassigned",
+          }));
+          const byCandidate = {};
+          exams.forEach((e) => {
+            const candidateKey = String(e.candidate_id || "").trim().toLowerCase();
+            (byCandidate[candidateKey] ??= []).push(e);
+          });
+          Object.values(byCandidate).forEach((rows) => {
+            rows.sort(
+              (a, b) =>
+                a.date.localeCompare(b.date) ||
+                a.start - b.start ||
+                a.end - b.end,
+            );
+            for (let i = 0; i < rows.length; i++)
+              for (let j = i + 1; j < rows.length; j++) {
+                if (rows[j].date !== rows[i].date) break;
+                if (rows[j].start >= rows[i].end) break;
+                if (
+                  overlap(
+                    rows[i].start,
+                    rows[i].end,
+                    rows[j].start,
+                    rows[j].end,
+                  )
+                ) {
+                  rows[i].candidate_conflict = rows[j].candidate_conflict =
+                    true;
+                  for (const x of [rows[i], rows[j]])
+                    if (!x.reason_codes.includes("student_overlap"))
+                      x.reason_codes.push("student_overlap");
+                }
+              }
+          });
+          const stock = Object.fromEntries(
+              data.equipment.records.map((x) => [
+                x.equipment_type.trim().toLowerCase(),
+                Number(x.quantity),
+              ]),
+            ),
+            equipmentReserve = Object.fromEntries(
+              Object.entries(stock).map(([k, v]) => [
+                k,
+                allocationOptions.reserve_equipment && v > 1 ? 1 : 0,
+              ]),
+            );
+          const roomCapacity = (r) =>
+            Math.max(0, Number(r.capacity) - (Number(r.unusable_seats) || 0));
+          const equipmentCanFit = (kind, day, start, end, limit) => {
+            if (limit <= 0) return false;
+            const events = [];
+            (equipmentBookings[kind] || []).forEach((booking) => {
+              if (booking.date !== day || !overlap(start, end, booking.start, booking.end)) return;
+              events.push([Math.max(start, booking.start), 1]);
+              events.push([Math.min(end, booking.end), -1]);
+            });
+            let active = 0;
+            for (const [, delta] of events.sort((a, b) => a[0] - b[0] || a[1] - b[1])) {
+              active += delta;
+              if (active >= limit) return false;
+            }
+            return true;
+          };
+          let operational = data.rooms.records
+            .filter(
+              (r) =>
+                (r.status || "available").toLowerCase() === "available" &&
+                roomCapacity(r) > 0,
+            )
+            .sort(
+              (a, b) =>
+                roomCapacity(b) - roomCapacity(a) ||
+                a.room_id.localeCompare(b.room_id),
+            );
+          const reservedRoom =
+              allocationOptions.reserve_room && operational.length > 1
+                ? operational[0]
+                : null,
+            normalRooms = operational.filter((r) => r !== reservedRoom);
+          const allSubjects = new Set(
+            exams.map((x) => x.subject.toLowerCase()),
+          );
+          const taught = (p) =>
+            (p.subjects_taught || "")
+              .toLowerCase()
+              .split(/[|;,]/)
+              .map((x) => x.trim())
+              .filter((x) => x && x !== "none" && x !== "n/a");
+          const broad = data.proctors.records
+            .filter((p) => !taught(p).some((s) => allSubjects.has(s)))
+            .sort(
+              (a, b) =>
+                min(b.available_to) -
+                min(b.available_from) -
+                (min(a.available_to) - min(a.available_from)),
+            );
+          const reservedProctor =
+              allocationOptions.reserve_proctor && broad.length > 1
+                ? broad[0]
+                : null,
+            normalStaff = data.proctors.records.filter(
+              (p) => p !== reservedProctor,
+            );
+          const sessions = {};
+          exams
+            .filter((e) => !e.candidate_conflict)
+            .forEach((e) => {
+              const key = JSON.stringify([
+                e.date,
+                e.subject.toLowerCase(),
+                e.paper.toLowerCase(),
+                e.start,
+              ]);
+              (sessions[key] ??= {
+                key,
+                date: e.date,
+                subject: e.subject.toLowerCase(),
+                paper: e.paper,
+                start: e.start,
+                end: e.end,
+                rows: [],
+              }).rows.push(e);
+              sessions[key].end = Math.max(sessions[key].end, e.end);
+            });
+          const sessionValues = Object.values(sessions);
+          const staffFor = (s) =>
+            normalStaff.filter(
+              (p) =>
+                min(p.available_from) <= s.start &&
+                min(p.available_to) >= s.end &&
+                !taught(p).includes(s.subject),
+            );
+          const roomsFor = (s) =>
+            normalRooms.filter(
+              (r) =>
+                min(r.available_from) <= s.start &&
+                min(r.available_to) >= s.end,
+            );
+          const pressure = (s) => {
+            const counts = {};
+            s.rows.forEach((e) => {
+              let k = (e.equipment || "none").trim().toLowerCase();
+              if (k !== "none") counts[k] = (counts[k] || 0) + 1;
+            });
+            return Object.entries(counts).reduce(
+              (n, [k, v]) =>
+                n +
+                v / Math.max(1, (stock[k] || 0) - (equipmentReserve[k] || 0)),
+              0,
+            );
+          };
+          const chooseRoomSet = (candidates, demand, maxRooms) => {
+            let states = new Map([[0, []]]);
+            for (const room of candidates) {
+              const updated = new Map(states),
+                cap = roomCapacity(room);
+              for (const [total, chosen] of states) {
+                if (chosen.length >= maxRooms) continue;
+                const next = total + cap,
+                  proposed = [...chosen, room],
+                  current = updated.get(next),
+                  ids = (xs) =>
+                    xs
+                      .map((x) => x.room_id)
+                      .sort()
+                      .join("|");
+                if (
+                  !current ||
+                  proposed.length < current.length ||
+                  (proposed.length === current.length &&
+                    ids(proposed) < ids(current))
+                )
+                  updated.set(next, proposed);
+              }
+              states = updated;
+            }
+            const covering = [...states]
+              .filter(([total, chosen]) => chosen.length && total >= demand)
+              .sort(
+                (a, b) =>
+                  a[1].length - b[1].length ||
+                  a[0] - demand - (b[0] - demand) ||
+                  a[1]
+                    .map((x) => x.room_id)
+                    .sort()
+                    .join("|")
+                    .localeCompare(
+                      b[1]
+                        .map((x) => x.room_id)
+                        .sort()
+                        .join("|"),
+                    ),
+              );
+            if (covering.length) return covering[0][1];
+            return [...states].sort(
+              (a, b) => b[0] - a[0] || a[1].length - b[1].length,
+            )[0][1];
+          };
+          sessionValues.sort(
+            (a, b) =>
+              staffFor(a).length - staffFor(b).length ||
+              roomsFor(a).reduce((n, r) => n + roomCapacity(r), 0) -
+                roomsFor(b).reduce((n, r) => n + roomCapacity(r), 0) ||
+              pressure(b) - pressure(a) ||
+              b.rows.length - a.rows.length ||
+              a.date.localeCompare(b.date) ||
+              a.start - b.start ||
+              a.subject.localeCompare(b.subject),
+          );
+          const roomBookings = {},
+            staffBookings = {},
+            equipmentBookings = {};
+          for (const s of sessionValues) {
+            const pending = [...s.rows].sort((a, b) => {
+              const type = (x) => (x.equipment || "none").trim().toLowerCase(),
+                qa = Math.max(
+                  1,
+                  (stock[type(a)] || 999999) - (equipmentReserve[type(a)] || 0),
+                ),
+                qb = Math.max(
+                  1,
+                  (stock[type(b)] || 999999) - (equipmentReserve[type(b)] || 0),
+                );
+              return (
+                (type(a) === "none" ? 0 : -1 / qa) -
+                  (type(b) === "none" ? 0 : -1 / qb) ||
+                a.candidate_id.localeCompare(b.candidate_id)
+              );
+            });
+            while (pending.length) {
+              const current = Object.entries(roomBookings).flatMap(
+                ([id, bookings]) =>
+                  bookings.filter(
+                    (b) =>
+                      b.session === s.key &&
+                      b.seats.length < roomCapacity(b.room),
+                  ),
+              );
+              let booking = current.sort(
+                (a, b) =>
+                  b.seats.length / roomCapacity(b.room) -
+                  a.seats.length / roomCapacity(a.room),
+              )[0];
+              if (!booking) {
+                const free = roomsFor(s).filter(
+                  (r) =>
+                    !(roomBookings[r.room_id] || []).some(
+                      (b) =>
+                        b.date === s.date &&
+                        overlap(s.start, s.end, b.start, b.end),
+                    ),
+                );
+                if (!free.length) {
+                  const e = pending.shift();
+                  e.reason_codes.push("room_capacity_or_availability");
+                  e.equipment_status = "not_allocated_room";
+                  continue;
+                }
+                const eligible = staffFor(s).filter(
+                  (p) =>
+                    !(staffBookings[p.proctor_id] || []).some(
+                      (b) =>
+                        b.date === s.date &&
+                        overlap(s.start, s.end, b.start, b.end),
+                    ),
+                );
+                eligible.sort(
+                  (a, b) =>
+                    min(a.available_to) -
+                      min(a.available_from) -
+                      (min(b.available_to) - min(b.available_from)) ||
+                    a.proctor_id.localeCompare(b.proctor_id),
+                );
+                if (!eligible.length) {
+                  pending.forEach((e) =>
+                    e.reason_codes.push("no_eligible_proctor_for_room"),
+                  );
+                  break;
+                }
+                const roomSet = chooseRoomSet(
+                  free,
+                  pending.length,
+                  eligible.length,
+                );
+                const room = roomSet.sort(
+                  (a, b) =>
+                    roomCapacity(b) - roomCapacity(a) ||
+                    a.room_id.localeCompare(b.room_id),
+                )[0];
+                const proctor = eligible[0];
+                booking = {
+                  session: s.key,
+                  date: s.date,
+                  start: s.start,
+                  end: s.end,
+                  room,
+                  seats: [],
+                  proctor,
+                };
+                (roomBookings[room.room_id] ??= []).push(booking);
+                if (proctor)
+                  (staffBookings[proctor.proctor_id] ??= []).push({
+                    date: s.date,
+                    start: s.start,
+                    end: s.end,
+                    room_id: room.room_id,
+                    session: s.key,
+                    subject: s.subject,
+                  });
+              }
+              const e = pending.shift();
+              e.room_id = booking.room.room_id;
+              e.room_capacity = roomCapacity(booking.room);
+              e.room_total_capacity = Number(booking.room.capacity);
+              e.room_unusable_seats = Number(booking.room.unusable_seats) || 0;
+              e.seat = booking.seats.length + 1;
+              booking.seats.push(e._index);
+              if (booking.proctor) {
+                e.proctor_id = booking.proctor.proctor_id;
+                e.proctor_name = booking.proctor.proctor_name;
+              } else e.reason_codes.push("no_eligible_proctor_for_room");
+              const kind = (e.equipment || "none").trim().toLowerCase();
+              if (kind === "none") e.equipment_status = "not_required";
+              else {
+                const usable = Math.max(
+                  0,
+                  (stock[kind] || 0) - (equipmentReserve[kind] || 0),
+                );
+                if (equipmentCanFit(kind, e.date, e.start, e.end, usable)) {
+                  (equipmentBookings[kind] ??= []).push({
+                    date: e.date,
+                    start: e.start,
+                    end: e.end,
+                    candidate_id: e.candidate_id,
+                  });
+                  e.equipment_status = "assigned";
+                } else {
+                  e.equipment_available = false;
+                  e.equipment_status = "quantity_shortage";
+                  e.reason_codes.push("equipment_quantity");
+                }
+              }
+            }
+          }
+          const independent = [];
+          for (const [id, bookings] of Object.entries(roomBookings)) {
+            for (let i = 0; i < bookings.length; i++) {
+              const b = bookings[i];
+              if (b.seats.length > roomCapacity(b.room))
+                independent.push({ resource: id, issue: "capacity_exceeded" });
+              if ((b.room.status || "available").toLowerCase() !== "available")
+                independent.push({
+                  resource: id,
+                  issue: "room_not_operational",
+                });
+              if (
+                min(b.room.available_from) > b.start ||
+                min(b.room.available_to) < b.end
+              )
+                independent.push({
+                  resource: id,
+                  issue: "outside_room_availability",
+                });
+              for (const other of bookings.slice(i + 1))
+                if (
+                  b.session !== other.session &&
+                  b.date === other.date &&
+                  overlap(b.start, b.end, other.start, other.end)
+                )
+                  independent.push({
+                    resource: id,
+                    issue: "overlapping_room_bookings",
+                  });
+            }
+          }
+          for (const [id, bookings] of Object.entries(staffBookings)) {
+            const person = data.proctors.records.find(
+              (p) => p.proctor_id === id,
+            );
+            for (const b of bookings) {
+              if (
+                min(person.available_from) > b.start ||
+                min(person.available_to) < b.end
+              )
+                independent.push({
+                  resource: id,
+                  issue: "outside_proctor_availability",
+                });
+              if (taught(person).includes((b.subject || "").toLowerCase()))
+                independent.push({
+                  resource: id,
+                  issue: "proctor_teaches_exam_subject",
+                });
+            }
+            for (let i = 0; i < bookings.length; i++)
+              for (const other of bookings.slice(i + 1))
+                if (
+                  bookings[i].date === other.date &&
+                  overlap(
+                    bookings[i].start,
+                    bookings[i].end,
+                    other.start,
+                    other.end,
+                  )
+                )
+                  independent.push({
+                    resource: id,
+                    issue: "overlapping_proctor_duties",
+                  });
+          }
+          for (const [kind, qty] of Object.entries(stock)) {
+            const limit = Math.max(0, qty - (equipmentReserve[kind] || 0)),
+              days = {};
+            exams
+              .filter(
+                (e) =>
+                  e.equipment_available &&
+                  e.equipment_status === "assigned" &&
+                  (e.equipment || "none").trim().toLowerCase() === kind,
+              )
+              .forEach((e) =>
+                (days[e.date] ??= []).push([e.start, 1], [e.end, -1]),
+              );
+            for (const [date, events] of Object.entries(days)) {
+              let active = 0;
+              for (const [time, delta] of events.sort(
+                (a, b) => a[0] - b[0] || a[1] - b[1],
+              )) {
+                active += delta;
+                if (active > limit) {
+                  independent.push({
+                    resource: kind,
+                    issue: "equipment_quantity_exceeded",
+                    date,
+                  });
+                  break;
+                }
+              }
+            }
+          }
+          exams.forEach((e) => {
+            if (e.candidate_conflict) {
+              e.assignment_status = "unassigned";
+              e.reason_codes.push("student_overlap");
+            } else if (e.room_id && e.proctor_id && e.equipment_available)
+              e.assignment_status = "allocated";
+            else if (e.room_id) e.assignment_status = "partial";
+            else e.assignment_status = "unassigned";
+            e.start_minute = e.start;
+            e.end_minute = e.end;
+            // Keep the local preview's field names aligned with the Flask API
+            // so the same UI status, filter and recovery logic works in both.
+            e.equipment_ok = Boolean(e.equipment_available);
+            e.student_conflict = Boolean(e.candidate_conflict);
+            e.room_reason = e.reason_codes.includes(
+              "room_capacity_or_availability",
+            )
+              ? "room_capacity_or_availability"
+              : null;
+            e.proctor_reason = e.reason_codes.includes(
+              "no_eligible_proctor_for_room",
+            )
+              ? "no_eligible_proctor_for_room"
+              : null;
+          });
+          const unresolved = exams.filter(
+            (e) => e.assignment_status !== "allocated",
+          ).length;
+          allocationMeta = {
+            reserve: {
+              room: reservedRoom
+                ? {
+                    room_id: reservedRoom.room_id,
+                    capacity: roomCapacity(reservedRoom),
+                    total_capacity: Number(reservedRoom.capacity),
+                    unusable_seats: Number(reservedRoom.unusable_seats) || 0,
+                  }
+                : null,
+              proctor: reservedProctor
+                ? {
+                    proctor_id: reservedProctor.proctor_id,
+                    proctor_name: reservedProctor.proctor_name,
+                  }
+                : null,
+              equipment: equipmentReserve,
+            },
+            rooms_used: Object.keys(roomBookings).length,
+            operational_rooms: operational.length,
+            room_bookings: Object.values(roomBookings).reduce(
+              (n, x) => n + x.length,
+              0,
+            ),
+            proctor_bookings: Object.values(staffBookings).reduce(
+              (n, x) => n + x.length,
+              0,
+            ),
+            independent_check_issues: independent,
+            method:
+              "most-constrained-first; equipment scarcity first; least-waste subset-sum room packing bounded by available proctors; one proctor per room booking; independent overlap and capacity checks",
+          };
+          allocation = exams;
+          visibleCount = 20;
+          allocationSearch = "";
+          view = "room";
+          page = "allocation";
+          appNotice =
+            unresolved || independent.length
+              ? {
+                  message: `Allocation review: ${unresolved} entries need attention${independent.length ? ` and ${independent.length} independent check issue(s) were detected` : ""}. See suggested recovery steps.`,
+                  type: "error",
+                }
+              : {
+                  message:
+                    "Allocation completed and passed the independent checks. Contingency resources are shown below.",
+                  type: "success",
+                };
+          render();
+        } catch (e) {
+          console.error(e);
+          setNotice(
+            `Allocation engine failed: ${e.message || "unexpected error"}. Check the input tables and retry.`,
+          );
+          render();
+        }
+      }
+      function roomUtilizationPanel() {
+        const reserveRoomId = String(allocationMeta.reserve?.room?.room_id ?? "").trim().toLowerCase();
+        const rooms = (data.rooms?.records || []).map((room) => {
+          const roomId = String(room.room_id ?? "").trim();
+          const roomKey = roomId.toLowerCase();
+          const unusable = Math.max(0, Number(room.unusable_seats) || 0);
+          const capacity = Math.max(0, Number(room.capacity) || 0);
+          const usable = Math.max(0, capacity - unusable);
+          const byBooking = new Map();
+          allocation.filter((entry) => String(entry.room_id ?? "") === roomId).forEach((entry) => {
+            const key = [entry.date, entry.subject, entry.paper, entry.start ?? entry.start_minute].join("|");
+            if (!byBooking.has(key)) byBooking.set(key, { date: entry.date, start: Number(entry.start ?? entry.start_minute) || 0, end: Number(entry.end ?? entry.end_minute) || 0, seats: 0 });
+            const booking = byBooking.get(key);
+            booking.end = Math.max(booking.end, Number(entry.end ?? entry.end_minute) || 0);
+            booking.seats += 1;
+          });
+          const bookings = [...byBooking.values()];
+          const events = [];
+          bookings.forEach((booking) => {
+            events.push({ date: booking.date, time: booking.start, delta: booking.seats });
+            events.push({ date: booking.date, time: booking.end, delta: -booking.seats });
+          });
+          events.sort((a, b) => a.date.localeCompare(b.date) || a.time - b.time || a.delta - b.delta);
+          let active = 0, peak = 0, activeDate = null;
+          events.forEach((event) => {
+            if (event.date !== activeDate) { active = 0; activeDate = event.date; }
+            active += event.delta;
+            peak = Math.max(peak, active);
+          });
+          const rawStatus = String(room.status || "available").trim().toLowerCase();
+          const held = reserveRoomId && roomKey === reserveRoomId;
+          const state = rawStatus !== "available"
+            ? (room.status || "Unavailable")
+            : usable === 0
+              ? "No usable seats"
+              : held
+                ? "Held in reserve"
+                : bookings.length
+                  ? "Used"
+                  : "Empty / available";
+          const percent = usable ? Math.min(100, Math.round(peak * 100 / usable)) : 0;
+          return { roomId, capacity, unusable, usable, bookings: bookings.length, peak, state, percent };
+        });
+        const usedCount = rooms.filter((room) => room.bookings > 0).length;
+        const emptyCount = rooms.filter((room) => room.state === "Empty / available").length;
+        const reservedCount = rooms.filter((room) => room.state === "Held in reserve").length;
+        return `<details class="card room-usage-panel resource-inventory"><summary><strong>Room inventory &amp; empty rooms</strong><span>${emptyCount} empty · ${reservedCount} held in reserve · ${usedCount} used · ${rooms.length} total</span></summary><div class="table-wrap"><table class="data-table"><thead><tr><th>Room</th><th>Usable / installed seats</th><th>Bookings</th><th>Peak concurrent seating</th><th>Status</th></tr></thead><tbody>${rooms.map((room) => `<tr><td><strong>${esc(room.roomId)}</strong></td><td>${room.usable} / ${room.capacity}${room.unusable ? ` · ${room.unusable} unavailable` : ""}</td><td>${room.bookings}</td><td><div class="utilization-cell"><span>${room.peak} / ${room.usable}</span><i class="util-track"><b style="width:${room.percent}%"></b></i></div></td><td><span class="status-pill ${room.state === "Used" ? "allocated" : room.state === "Empty / available" ? "" : room.state === "Held in reserve" ? "partial" : "unassigned"}">${esc(room.state)}</span></td></tr>`).join("") || `<tr><td colspan="5">No room records are loaded.</td></tr>`}</tbody></table></div><p class="footer-note">Every room from the uploaded room table is listed, including rooms never used by this schedule, rooms held as contingency, and rooms unavailable for operational reasons. Rooms can be reused after a booking ends.</p></details>`;
+      }
+
+      function proctorUtilizationPanel() {
+        const reservedId = String(allocationMeta.reserve?.proctor?.proctor_id ?? "").trim().toLowerCase();
+        const bookingsByProctor = new Map();
+        allocation.forEach((entry) => {
+          const id = String(entry.proctor_id ?? "").trim();
+          if (!id || !entry.room_id) return;
+          const key = [id.toLowerCase(), entry.room_id, entry.date, entry.subject, entry.paper, entry.start ?? entry.start_minute].join("|");
+          if (!bookingsByProctor.has(id.toLowerCase())) bookingsByProctor.set(id.toLowerCase(), new Map());
+          const personBookings = bookingsByProctor.get(id.toLowerCase());
+          if (!personBookings.has(key)) personBookings.set(key, {
+            room: String(entry.room_id), date: String(entry.date ?? ""),
+            start: Number(entry.start ?? entry.start_minute) || 0,
+            subject: String(entry.subject ?? ""), paper: String(entry.paper ?? "")
+          });
+        });
+        const proctors = (data.proctors?.records || []).map((person) => {
+          const id = String(person.proctor_id ?? "").trim();
+          const key = id.toLowerCase();
+          const bookings = [...(bookingsByProctor.get(key)?.values() || [])].sort((a, b) => a.date.localeCompare(b.date) || a.start - b.start || a.room.localeCompare(b.room));
+          const held = reservedId && key === reservedId;
+          const state = bookings.length ? "Assigned" : held ? "Held in reserve" : "Spare / not assigned";
+          const sessionSummary = bookings.slice(0, 2).map((booking) => `${booking.date} ${clock(booking.start)} · ${booking.subject} ${booking.paper} · ${booking.room}`).join("; ");
+          return {
+            id,
+            name: String(person.proctor_name ?? ""),
+            from: String(person.available_from ?? ""),
+            to: String(person.available_to ?? ""),
+            subjects: String(person.subjects_taught ?? "none").trim() || "none",
+            bookings: bookings.length,
+            state,
+            sessionSummary: sessionSummary ? `${sessionSummary}${bookings.length > 2 ? `; +${bookings.length - 2} more` : ""}` : "No room bookings in this allocation"
+          };
+        });
+        const assignedCount = proctors.filter((person) => person.bookings > 0).length;
+        const spareCount = proctors.filter((person) => person.state === "Spare / not assigned").length;
+        const heldCount = proctors.filter((person) => person.state === "Held in reserve").length;
+        return `<details class="card room-usage-panel resource-inventory"><summary><strong>Proctor inventory &amp; spare staff</strong><span>${assignedCount} assigned · ${spareCount} not assigned · ${heldCount} held in reserve · ${proctors.length} total</span></summary><div class="table-wrap"><table class="data-table"><thead><tr><th>Proctor</th><th>Availability</th><th>Subjects taught</th><th>Room bookings</th><th>Assignment / status</th></tr></thead><tbody>${proctors.map((person) => `<tr><td><strong>${esc(person.name || person.id)}</strong><small style="display:block;color:var(--muted)">${esc(person.id)}</small></td><td>${esc(person.from)}–${esc(person.to)}</td><td>${esc(person.subjects)}</td><td>${person.bookings}</td><td><span class="status-pill ${person.state === "Assigned" ? "allocated" : person.state === "Held in reserve" ? "partial" : ""}">${esc(person.state)}</span><small style="display:block;color:var(--muted);margin-top:4px">${esc(person.sessionSummary)}</small></td></tr>`).join("") || `<tr><td colspan="5">No proctor records are loaded.</td></tr>`}</tbody></table></div><p class="footer-note">All proctors from the uploaded staff table are listed. “Spare / not assigned” means the person received no room booking in this generated plan; check their availability and subjects taught before treating them as eligible for a particular sitting.</p></details>`;
+      }
+
+      function equipmentInventoryPanel() {
+        const normalize = (value) => String(value ?? "").trim().toLowerCase();
+        const reserveMap = allocationMeta.reserve?.equipment || {};
+        const reserveFor = (kind) => {
+          const key = normalize(kind);
+          const match = Object.entries(reserveMap).find(([name]) => normalize(name) === key);
+          return Math.max(0, Number(match?.[1]) || 0);
+        };
+        const eventsByKind = new Map();
+        const requestCountByKind = new Map();
+        const shortageCountByKind = new Map();
+        allocation.forEach((entry) => {
+          const assignedKinds = Array.isArray(entry.equipment_allocations) && entry.equipment_allocations.length
+            ? entry.equipment_allocations.map(normalize).filter((kind) => kind && !["none", "n/a", "na", "null"].includes(kind))
+            : (String(entry.equipment_status ?? "") === "assigned" && !["", "none", "n/a", "na", "null"].includes(normalize(entry.equipment)) ? [normalize(entry.equipment)] : []);
+          const uniqueAssigned = [...new Set(assignedKinds)];
+          uniqueAssigned.forEach((kind) => {
+            requestCountByKind.set(kind, (requestCountByKind.get(kind) || 0) + 1);
+            if (!eventsByKind.has(kind)) eventsByKind.set(kind, []);
+            const start = Number(entry.start ?? entry.start_minute);
+            const end = Number(entry.end ?? entry.end_minute);
+            if (Number.isFinite(start) && Number.isFinite(end) && end > start) {
+              eventsByKind.get(kind).push({ date: String(entry.date ?? ""), time: start, delta: 1 });
+              eventsByKind.get(kind).push({ date: String(entry.date ?? ""), time: end, delta: -1 });
+            }
+          });
+          const missingKinds = Array.isArray(entry.missing_equipment) && entry.missing_equipment.length
+            ? entry.missing_equipment.map(normalize)
+            : (String(entry.equipment_status ?? "") === "quantity_shortage" ? [normalize(entry.equipment)].filter((kind) => kind && !["none", "n/a", "na", "null"].includes(kind)) : []);
+          [...new Set(missingKinds)].forEach((kind) => shortageCountByKind.set(kind, (shortageCountByKind.get(kind) || 0) + 1));
+        });
+        const inventory = (data.equipment?.records || []).map((item) => {
+          const type = String(item.equipment_type ?? "").trim();
+          const key = normalize(type);
+          const quantity = Math.max(0, Number(item.quantity) || 0);
+          const reserved = Math.min(quantity, reserveFor(type));
+          const operational = Math.max(0, quantity - reserved);
+          const events = [...(eventsByKind.get(key) || [])].sort((a, b) => a.date.localeCompare(b.date) || a.time - b.time || a.delta - b.delta);
+          let active = 0, peak = 0, activeDate = null;
+          events.forEach((event) => {
+            if (event.date !== activeDate) { active = 0; activeDate = event.date; }
+            active += event.delta;
+            peak = Math.max(peak, active);
+          });
+          const spare = Math.max(0, operational - peak);
+          const shortages = shortageCountByKind.get(key) || 0;
+          const state = shortages ? "Shortage detected" : spare > 0 ? "Spare stock available" : peak > 0 ? "Fully used at peak" : reserved ? "Held in reserve" : "Not requested";
+          return { type, quantity, reserved, operational, peak, spare, requests: requestCountByKind.get(key) || 0, shortages, state };
+        });
+        const spareUnits = inventory.reduce((total, item) => total + item.spare, 0);
+        const reservedUnits = inventory.reduce((total, item) => total + item.reserved, 0);
+        const shortageTypes = inventory.filter((item) => item.shortages > 0).length;
+        return `<details class="card room-usage-panel resource-inventory"><summary><strong>Equipment inventory &amp; spare stock</strong><span>${spareUnits} spare units at peak · ${reservedUnits} held in reserve · ${shortageTypes} type(s) with shortages</span></summary><div class="table-wrap"><table class="data-table"><thead><tr><th>Equipment type</th><th>Total quantity</th><th>Held in reserve</th><th>Usable by schedule</th><th>Peak concurrent use</th><th>Spare at peak</th><th>Requests assigned / shortage</th><th>Status</th></tr></thead><tbody>${inventory.map((item) => `<tr><td><strong>${esc(item.type)}</strong></td><td>${item.quantity}</td><td>${item.reserved}</td><td>${item.operational}</td><td>${item.peak} / ${item.operational}</td><td><strong>${item.spare}</strong></td><td>${item.requests}${item.shortages ? ` / <span style="color:var(--red)">${item.shortages} short</span>` : ""}</td><td><span class="status-pill ${item.shortages ? "unassigned" : item.spare > 0 || item.state === "Not requested" ? "allocated" : item.reserved ? "partial" : ""}">${esc(item.state)}</span></td></tr>`).join("") || `<tr><td colspan="8">No equipment inventory records are loaded.</td></tr>`}</tbody></table></div><p class="footer-note">“Spare at peak” is the quantity outside the protected reserve after subtracting the highest simultaneous assigned use for each equipment type. Equipment can be reused by non-overlapping sittings. Support requirements such as readers and scribes are included when the allocation engine reports them in equipment_allocations.</p></details>`;
+      }
+
+      function allocationPage() {
+        if (!allocation.length)
+          return `<div class="eyebrow">ALLOCATION WORKSPACE</div><h1>Allocation</h1><p class="lead">Generate a plan to view seat assignments, contingency reserves, and unresolved constraints.</p><div class="card empty">No allocation has been generated yet.<br><button class="btn primary" style="margin-top:16px" onclick="go('setup')">Review data and generate</button></div>${reserveControls()}`;
+        const statusOf = (a) =>
+            a.assignment_status ||
+            (a.room_id && a.proctor_id && a.equipment_ok
+              ? "allocated"
+              : a.room_id
+                ? "partial"
+                : "unassigned"),
+          q = allocationSearch.trim().toLowerCase(),
+          normalizeEquipment = (value) => String(value ?? "").trim().toLowerCase(),
+          isRequestedFlag = (value) => [true, 1].includes(value) || ["1", "true", "yes", "y"].includes(normalizeEquipment(value)),
+          equipmentKindsFor = (entry) => {
+            const kinds = new Set();
+            const add = (value) => {
+              const kind = normalizeEquipment(value);
+              if (kind && !["none", "n/a", "na", "null", "", "false", "0"].includes(kind)) kinds.add(kind);
+            };
+            (Array.isArray(entry.equipment_allocations) ? entry.equipment_allocations : []).forEach(add);
+            (Array.isArray(entry.missing_equipment) ? entry.missing_equipment : []).forEach(add);
+            add(entry.equipment);
+            if (isRequestedFlag(entry.reader)) add("reader");
+            if (isRequestedFlag(entry.scribe)) add("scribe");
+            return [...kinds];
+          },
+          filtered = allocation.filter((a) =>
+            [
+              a.room_id,
+              a.candidate_id,
+              a.candidate_name,
+              a.proctor_id,
+              a.proctor_name,
+              a.subject,
+              a.paper,
+              a.equipment,
+              a.equipment_status,
+              a.reader,
+              a.scribe,
+              ...(Array.isArray(a.equipment_allocations) ? a.equipment_allocations : []),
+              ...(Array.isArray(a.missing_equipment) ? a.missing_equipment : []),
+            ].some((v) => String(v || "").toLowerCase().includes(q)),
+          ),
+          unresolved = allocation.filter(
+            (a) => statusOf(a) !== "allocated" || a.student_conflict,
+          ),
+          allocatedCount = allocation.length - unresolved.length,
+          checks = allocationMeta.independent_check_issues || [],
+          staffingDiagnostics = allocationMeta.staffing_diagnostics || [];
+        const unresolvedReason = (a) => {
+          const reasons = a.reason_codes || [];
+          if (a.student_conflict || reasons.includes("student_overlap")) return "overlapping papers for this student";
+          if (reasons.includes("no_eligible_proctor_for_room") || a.proctor_reason) return "no eligible proctor available for this room and time";
+          if (reasons.includes("room_capacity_or_availability") || a.room_reason) return "room capacity or availability";
+          if (!a.room_id) return "no compatible room could be assigned";
+          if (!a.proctor_id) return "no eligible proctor available for this room and time";
+          if (!a.equipment_ok) return "required equipment quantity unavailable";
+          return "review required";
+        };
+        let ordered = [...filtered];
+        if (view === "candidate")
+          ordered.sort(
+            (a, b) =>
+              a.candidate_name.localeCompare(b.candidate_name) ||
+              a.date.localeCompare(b.date) ||
+              a.start - b.start,
+          );
+        if (view === "proctor")
+          ordered.sort(
+            (a, b) =>
+              a.proctor_name.localeCompare(b.proctor_name) ||
+              a.date.localeCompare(b.date) ||
+              a.start - b.start,
+          );
+        const rows = ordered.slice(0, visibleCount),
+          allSessions = {};
+        allocation.forEach((a) => {
+          if (!a.room_id) return;
+          const k = `${a.room_id}|${a.date}|${a.subject}|${a.paper}|${a.start}`;
+          (allSessions[k] ??= {
+            room_id: a.room_id,
+            date: a.date,
+            subject: a.subject,
+            paper: a.paper,
+            start: a.start,
+            end: a.end,
+            capacity: a.room_capacity,
+            totalCapacity: a.room_total_capacity ?? a.room_capacity,
+            unusableSeats: a.room_unusable_seats || 0,
+            seats: [],
+          }).seats.push(a);
+          allSessions[k].end = Math.max(allSessions[k].end, a.end);
+        });
+        const matchingKeys = new Set(
+            filtered.map(
+              (a) =>
+                `${a.room_id}|${a.date}|${a.subject}|${a.paper}|${a.start}`,
+            ),
+          ),
+          sessions = Object.entries(allSessions)
+            .filter(([k]) => matchingKeys.has(k))
+            .map(([, v]) => v)
+            .sort(
+              (a, b) =>
+                a.date.localeCompare(b.date) ||
+                a.start - b.start ||
+                a.room_id.localeCompare(b.room_id),
+            ),
+          roomRows = sessions.slice(0, visibleCount);
+
+        // Equipment view: one row per equipment type requested by a candidate.
+        // It includes successful assignments and unmet requests, not just the
+        // equipment field that happened to be assigned.
+        const equipmentRowsAll = [];
+        filtered.forEach((entry) => {
+          const kinds = equipmentKindsFor(entry);
+          const assignedKinds = new Set((Array.isArray(entry.equipment_allocations) ? entry.equipment_allocations : []).map(normalizeEquipment));
+          const missingKinds = new Set((Array.isArray(entry.missing_equipment) ? entry.missing_equipment : []).map(normalizeEquipment));
+          // Compatibility with older single-item allocation responses.
+          if (!assignedKinds.size && normalizeEquipment(entry.equipment_status) === "assigned" && kinds.length === 1) assignedKinds.add(kinds[0]);
+          kinds.forEach((kind) => {
+            let state = "Not assigned";
+            if (assignedKinds.has(kind)) state = "Assigned";
+            else if (missingKinds.has(kind) || normalizeEquipment(entry.equipment_status) === "quantity_shortage" && normalizeEquipment(entry.equipment) === kind && missingKinds.has(kind)) state = "Quantity shortage";
+            else if (normalizeEquipment(entry.equipment_status) === "quantity_shortage") state = "Not allocated · another item unavailable";
+            else if (entry.student_conflict || normalizeEquipment(entry.equipment_status) === "not_allocated_candidate_conflict") state = "Not allocated · candidate conflict";
+            else if (!entry.room_id || normalizeEquipment(entry.equipment_status) === "not_allocated_room") state = "Not allocated · room unavailable";
+            else if (!entry.proctor_id) state = "Pending · proctor unavailable";
+            else if (normalizeEquipment(entry.equipment_status) === "pending") state = "Pending";
+            equipmentRowsAll.push({
+              kind,
+              entry,
+              state,
+              placeholder: false,
+            });
+          });
+        });
+        const inventoryTypes = (data.equipment?.records || [])
+          .map((item) => String(item.equipment_type ?? "").trim())
+          .filter(Boolean);
+        const kindsWithRequestsAcrossPlan = new Set(allocation.flatMap(equipmentKindsFor));
+        inventoryTypes.forEach((type) => {
+          const key = normalizeEquipment(type);
+          const alreadyShown = equipmentRowsAll.some((item) => normalizeEquipment(item.kind) === key);
+          const queryMatchesType = !q || key.includes(q);
+          if (!alreadyShown && queryMatchesType) {
+            const requestedInPlan = kindsWithRequestsAcrossPlan.has(key);
+            // If the search matches an inventory type but no student row matches,
+            // show an explicit empty result rather than hiding that equipment type.
+            equipmentRowsAll.push({
+              kind: type,
+              entry: null,
+              state: requestedInPlan ? "No matching requests" : "Not requested",
+              placeholder: true,
+            });
+          }
+        });
+        equipmentRowsAll.sort((a, b) =>
+          a.kind.localeCompare(b.kind) ||
+          (a.entry?.date || "9999").localeCompare(b.entry?.date || "9999") ||
+          (Number(a.entry?.start) || 0) - (Number(b.entry?.start) || 0) ||
+          String(a.entry?.candidate_name || "").localeCompare(String(b.entry?.candidate_name || "")),
+        );
+        const equipmentRows = equipmentRowsAll.slice(0, visibleCount);
+
+        const body =
+          view === "room"
+            ? `<div class="room-grid">${
+                roomRows
+                  .map((s) => {
+                    const remaining = Math.max(0, s.capacity - s.seats.length),
+                      partial = s.seats.some(
+                        (a) => statusOf(a) !== "allocated",
+                      );
+                    return `<div class="card room-card"><div class="room-card-head"><div><strong>Room ${esc(s.room_id)}</strong><small>${esc(s.date)} · ${esc(s.subject)} ${esc(s.paper)} · ${clock(s.start)}–${clock(s.end)}</small></div><span class="badge ${partial ? "error" : "valid"}">${s.seats.length} / ${s.capacity} usable seats</span></div><div class="room-proctor">Proctor: <strong>${esc(s.seats[0]?.proctor_name || "Unassigned")}</strong>${!s.seats[0]?.proctor_id ? `<span class="draft-badge">Staffing needed</span>` : ""}</div><div class="seat-map">${Array.from(
+                      { length: Math.min(s.totalCapacity, 60) },
+                      (_, i) => {
+                        if (i >= s.capacity)
+                          return `<div class="seat broken" title="Seat unavailable: broken desk">×</div>`;
+                        const a = s.seats[i],
+                          st = a ? statusOf(a) : "";
+                        return `<div class="seat ${a ? (st === "allocated" ? "occupied" : "occupied needs-review") : ""}" title="${a ? esc(`${a.candidate_name} · ${a.candidate_id}${st === "allocated" ? "" : " · " + st}`) : "Available seat"}">${a ? `S${String(a.seat).padStart(2, "0")}` : "·"}</div>`;
+                      },
+                    ).join(
+                      "",
+                    )}${s.capacity > 60 ? `<div class="seat">+${s.capacity - 60}</div>` : ""}</div><div class="seat-legend"><span><i class="legend-dot"></i>${remaining} seats remaining</span><span><i class="legend-dot free"></i>${s.totalCapacity} installed</span>${s.unusableSeats ? `<span><i class="legend-dot broken-dot"></i>${s.unusableSeats} broken</span>` : ""}${partial ? `<span class="draft-badge">Some seats need review</span>` : ""}</div><div class="footer-note">${s.seats.map((a) => esc(a.candidate_name)).join(" · ")}</div></div>`;
+                  })
+                  .join("") ||
+                `<div class="card empty">No room sessions match this search.</div>`
+              }</div>`
+            : view === "equipment"
+              ? `<div class="card"><div class="table-wrap"><table class="data-table"><thead><tr><th>Equipment type</th><th>Candidate</th><th>Examination</th><th>Date / time</th><th>Room / seat</th><th>Proctor</th><th>Equipment status</th></tr></thead><tbody>${equipmentRows.map((item) => item.placeholder
+                  ? `<tr><td><strong>${esc(item.kind)}</strong></td><td colspan="5" style="color:var(--muted)">${item.state === "Not requested" ? "No candidates requested this equipment type." : "No requests match the current search."}</td><td><span class="status-pill ${item.state === "Not requested" ? "allocated" : ""}">${esc(item.state)}</span></td></tr>`
+                  : `<tr><td><strong>${esc(item.kind)}</strong></td><td>${esc(item.entry.candidate_name || "Unknown candidate")}<small style="display:block;color:var(--muted)">${esc(item.entry.candidate_id || "")}</small></td><td>${esc(item.entry.subject || "")} ${esc(item.entry.paper || "")}</td><td>${esc(item.entry.date || "")}<small style="display:block;color:var(--muted)">${esc(item.entry.start_time || clock(item.entry.start))}–${clock(item.entry.end)}</small></td><td>${esc(item.entry.room_id || "Unassigned")}${item.entry.seat ? ` · Seat ${item.entry.seat}` : ""}</td><td>${esc(item.entry.proctor_name || "Unassigned")}</td><td><span class="status-pill ${item.state === "Assigned" ? "allocated" : item.state.includes("shortage") || item.state.includes("unavailable") || item.state.includes("conflict") ? "unassigned" : "partial"}">${esc(item.state)}</span></td></tr>`).join("") || `<tr><td colspan="7">No equipment requests match this search.</td></tr>`}</tbody></table></div><p class="footer-note equipment-footnote">Each row represents one candidate’s request for one equipment type. Units may be reused in non-overlapping sittings; shortages are shown separately from requests that could not be placed because the room, proctor, or candidate schedule remains unresolved.</p></div>`
+              : `<div class="card"><div class="entry-row head"><span>Student / paper</span><span>Room / seat</span><span>Proctor</span><span>Time / status</span></div>${
+                  rows
+                    .map((a) => {
+                      const st = statusOf(a);
+                      return `<div class="entry-row"><span><strong>${esc(a.candidate_name)}</strong><small>${esc(a.candidate_id)} · ${esc(a.subject)} ${esc(a.paper)}</small></span><span>${esc(a.room_id || "Unassigned")}${a.seat ? ` · Seat ${a.seat}` : ""}</span><span>${esc(a.proctor_name || "Unassigned")}<small>${esc(a.proctor_id || "")}</small></span><span>${esc(a.date)}<small>${a.start_time}–${clock(a.end)}</small><span class="status-pill ${st}">${st === "allocated" ? "Allocated" : st === "partial" ? "Partial · review" : "Unassigned"}</span>${a.reason_codes?.length ? `<small>${esc(a.reason_codes.join(", ").replace(/_/g, " "))}</small>` : ""}</span></div>`;
+                    })
+                    .join("") ||
+                  `<div class="empty">No entries match this search.</div>`
+                }</div>`;
+        const shown = view === "room" ? roomRows.length : view === "equipment" ? equipmentRows.length : rows.length,
+          total = view === "room" ? sessions.length : view === "equipment" ? equipmentRowsAll.length : filtered.length,
+          usedRooms = new Set(
+            allocation.filter((a) => a.room_id).map((a) => a.room_id),
+          ).size;
+        return `<div class="eyebrow">ALLOCATION WORKSPACE · ${allocation.length} EXAM ENTRIES</div><h1>Room seating &amp; allocation</h1><p class="lead">Sessions are prioritized by constraint, packed into seats, and assigned one eligible proctor per occupied room booking. Held contingency resources stay free.</p><div class="metric-row"><div class="card metric"><label>Fully allocated</label><strong>${allocatedCount}</strong><span>of ${allocation.length} exam entries</span></div><div class="card metric"><label>Needs review</label><strong>${unresolved.length}</strong><span>Partial or unassigned</span></div><div class="card metric"><label>Rooms used across all sessions</label><strong>${usedRooms}</strong><span>Distinct rooms assigned; reused between sessions</span></div><div class="card metric"><label>Independent checks</label><strong>${checks.length ? "Review" : "Pass"}</strong><span>${checks.length ? `${checks.length} plan issue(s) detected` : "Room, staff and equipment checks passed"}</span></div></div>${roomUtilizationPanel()}${proctorUtilizationPanel()}${equipmentInventoryPanel()}${reserveControls()}${
+          staffingDiagnostics.length
+            ? `<div class="card issues" style="margin-bottom:15px"><strong style="color:#954c45">Staffing bottleneck detected</strong>${staffingDiagnostics.map((item) => `<div class="issue-line">${esc(item.message || `${item.start_time}: insufficient eligible proctors.`)}</div>`).join("")}</div>`
+            : ""
+        }${
+          unresolved.length
+            ? `<div class="card issues" style="margin-bottom:15px"><strong style="color:#954c45">Unresolved assignments</strong>${unresolved
+                .slice(0, 8)
+                .map(
+                  (a) =>
+                    `<div class="issue-line"><strong>${esc(a.candidate_name)} · ${esc(a.subject)} ${esc(a.paper)}</strong>: ${esc(unresolvedReason(a))}.</div>`,
+                )
+                .join(
+                  "",
+                )}${unresolved.length > 8 ? `<div class="issue-line">And ${unresolved.length - 8} more. Search for a candidate, room, or proctor to inspect them.</div>` : ""}</div>${advicePanel(unresolved)}`
+            : ""
+        }${
+          checks.length
+            ? `<div class="card issues" style="margin-bottom:15px"><strong>Independent plan checks found issues</strong>${checks
+                .slice(0, 8)
+                .map(
+                  (x) =>
+                    `<div class="issue-line">${esc(x.resource)} · ${esc(x.issue.replace(/_/g, " "))}</div>`,
+                )
+                .join("")}</div>`
+            : ""
+        }<div class="section-head"><div><h2>Schedule</h2><p>Rooms are reused after bookings end. Search room, student, or proctor.</p></div><div class="search-row"><input id="allocation-search" class="search-input" placeholder="Search room, student, proctor, or equipment" value="${esc(allocationSearch)}" oninput="searchAllocation(this.value)"></div></div><div class="section-head" style="margin-top:0"><div class="tabs"><button class="${view === "room" ? "on" : ""}" onclick="setView('room')">Room seating</button><button class="${view === "candidate" ? "on" : ""}" onclick="setView('candidate')">By candidate</button><button class="${view === "proctor" ? "on" : ""}" onclick="setView('proctor')">By proctor</button><button class="${view === "equipment" ? "on" : ""}" onclick="setView('equipment')">By equipment</button></div><span class="entry-count">Showing ${shown} of ${total} ${view === "room" ? "room bookings" : view === "equipment" ? "equipment requests" : "entries"}</span></div>${body}${total > visibleCount ? `<div class="pager"><button class="btn" onclick="showMore()">Show more (${Math.min(20, total - visibleCount)} more)</button></div>` : ""}<div class="tech-note"><strong>Allocation method:</strong> subject-pure room assignments, least-waste subset-sum room bundles when staffing permits, round-robin allocation when proctors are the bottleneck, one proctor per occupied room, protected contingency reserves, and independent room, proctor, and equipment checks. Unresolved entries may indicate resource shortages rather than a seating bug.</div><div class="actions"><button class="btn" onclick="go('data')">Manage data</button><button class="btn primary" onclick="generate()">Regenerate allocation</button></div>`;
+      }
+      function addRow(k) {
+        if (!data[k]) return;
+        document.querySelector("#modal-root").innerHTML =
+          `<div class="modal-backdrop" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modal-head"><div><div class="eyebrow">NEW SOURCE RECORD</div><h2>${esc(schemas[k].short)}</h2></div><button onclick="closeModal()" aria-label="Close">×</button></div><form id="edit-form" onsubmit="event.preventDefault();saveNewRecord('${k}')"><div class="form-grid">${data[k].headers.map((h) => `<label class="field">${esc(h)}<input name="${esc(h)}" autocomplete="off"></label>`).join("")}</div><div class="actions"><button type="button" class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" type="submit">Validate &amp; submit record</button></div></form></div></div>`;
+      }
+      async function saveNewRecord(k) {
+        const form = document.querySelector("#edit-form");
+        if (!form) return;
+        const fd = new FormData(form),
+          row = {};
+        data[k].headers.forEach(
+          (h) => (row[h] = String(fd.get(h) || "").trim()),
+        );
+        data[k].records.push(row);
+        data[k].apiErrors = [];
+        allocation = [];
+        dataLimit[k] = Math.max(20, dataLimit[k] || 20);
+        closeModal();
+        await validateAndSubmit(k);
+      }
+      async function deleteRow(k, i) {
+        if (
+          !data[k] ||
+          !confirm(`Delete row ${i + 2} from ${schemas[k].short}?`)
+        )
+          return;
+        data[k].records.splice(i, 1);
+        data[k].apiErrors = [];
+        allocation = [];
+        await validateAndSubmit(k);
+      }
+      function downloadEditedCSV(k) {
+        try {
+          downloadBlob(`${k}-edited.csv`, csvFor(k), "text/csv");
+          setNotice(
+            `Downloaded the current ${schemas[k].short.toLowerCase()} table as CSV.`,
+            "success",
+          );
+          render();
+        } catch (e) {
+          setNotice(`Could not export this table: ${e.message}`);
+          render();
+        }
+      }
+      function reserveControls() {
+        const held = allocationMeta.reserve || {};
+        return `<div class="card reserve-panel"><div><div class="eyebrow">CONTINGENCY BUFFER</div><h3>Hold resources for last-minute changes</h3><p>Reserved resources stay out of the proposed timetable. Change these options and regenerate to compare the plan.</p></div><div class="reserve-options"><label><input type="checkbox" ${allocationOptions.reserve_room ? "checked" : ""} onchange="allocationOptions.reserve_room=this.checked">Keep one operational room aside${held.room ? ` · ${esc(held.room.room_id)} (${held.room.capacity} usable of ${held.room.total_capacity ?? held.room.capacity})` : " · no room currently held"}</label><label><input type="checkbox" ${allocationOptions.reserve_proctor ? "checked" : ""} onchange="allocationOptions.reserve_proctor=this.checked">Keep one broadly eligible proctor aside${held.proctor ? ` · ${esc(held.proctor.proctor_name)}` : " · none currently held"}</label><label><input type="checkbox" ${allocationOptions.reserve_equipment ? "checked" : ""} onchange="allocationOptions.reserve_equipment=this.checked">Keep one unit of equipment types with stock above one aside</label></div><button class="btn" onclick="generate()">Apply reserve settings &amp; regenerate</button></div>`;
+      }
+      function advicePanel(entries) {
+        if (!entries.length) return "";
+        const clashes = entries.filter((a) => a.student_conflict),
+          rooms = entries.filter((a) => !a.room_id && !a.student_conflict),
+          staff = entries.filter((a) => !a.proctor_id && !a.student_conflict),
+          equipment = entries.filter((a) => !a.equipment_ok),
+          items = [];
+        if (clashes.length)
+          items.push([
+            "Student timetable clashes",
+            `${clashes.length} entries overlap another paper for the same student. Move one sitting to a non-overlapping approved time, preserving required duration and access arrangements.`,
+          ]);
+        if (rooms.length) {
+          const usable = (data.rooms?.records || []).filter(
+            (r) => (r.status || "available").toLowerCase() === "available",
+          ).length;
+          items.push([
+            "Room capacity or availability",
+            `${rooms.length} entries could not be seated; ${usable} rooms are marked operational. Check room capacity, operating hours, and maintenance status. Add a suitable operational room or split the affected subject session across another approved time. Check the contingency panel; releasing its held room, if any, and regenerating may help.`,
+          ]);
+        }
+        if (staff.length)
+          items.push([
+            "Proctor availability or subject conflict",
+            `${staff.length} entries have no eligible proctor. Review staff availability and subjects taught, add another eligible proctor, or move sessions to a time when eligible staff are free. Check whether a contingency proctor is held before regenerating. Do not assign a teacher to an exam in a subject they teach.`,
+          ]);
+        if (equipment.length) {
+          const types = [
+            ...new Set(
+              equipment.map((a) =>
+                (a.equipment || "required equipment").replace(/_/g, " "),
+              ),
+            ),
+          ].join(", ");
+          items.push([
+            "Equipment quantity",
+            `${equipment.length} entries lack equipment (${types}). Check inventory and concurrent bookings; add equipment or stagger affected sittings so units can be reused. If a reserve unit is held, consider releasing it after coordinator approval.`,
+          ]);
+        }
+        return `<section class="card action-plan"><div class="action-plan-head"><div><div class="eyebrow">COORDINATOR REVIEW</div><h2>Suggested recovery steps</h2></div><span class="badge error">${entries.length} unresolved</span></div><p class="footer-note">These are constraint-based suggestions. Confirm exam rules, student arrangements, room safety, and staff availability before changing the schedule. No changes are applied automatically.</p><div class="action-plan-grid">${items.map(([title, body]) => `<div class="action-tip"><strong>${esc(title)}</strong><p>${esc(body)}</p></div>`).join("")}</div></section>`;
+      }
+      function exportCalendar() {
+        try {
+          if (
+            (calendarScope === "room" || calendarScope === "proctor") &&
+            !allocation.length
+          ) {
+            setNotice(
+              "Generate an allocation before exporting room or proctor calendars.",
+              "info",
+            );
+            render();
+            return;
+          }
+          const source = allocation.length
+            ? allocation
+            : (data.exams?.records || []).map((x) => ({
+                ...x,
+                start: min(x.start_time),
+                end:
+                  min(x.start_time) +
+                  Number(x.duration_min) +
+                  Number(x.extra_time_min || 0) + Number(x.rest_break_min || 0),
+              }));
+          const from = mondayISO(calendarAnchor || localISO(new Date())),
+            to = shiftISO(from, 6),
+            events = calendarSessions(calendarScope, source).filter(
+              (x) => x.date >= from && x.date <= to,
+            );
+          if (!events.length) {
+            setNotice(
+              "There are no events for this resource in the selected week. Choose another week or resource.",
+              "info",
+            );
+            render();
+            return;
+          }
+          const escICS = (s) =>
+            String(s || "")
+              .replace(/\\/g, "\\\\")
+              .replace(/\n/g, "\\n")
+              .replace(/,/g, "\\,")
+              .replace(/;/g, "\\;");
+          const fmt = (date, minutes) => {
+            const d = new Date(date + "T12:00:00");
+            d.setMinutes(minutes);
+            return `${localISO(d).replace(/-/g, "")}T${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}00`;
+          };
+          const lines = [
+            "BEGIN:VCALENDAR",
+            "VERSION:2.0",
+            "PRODID:-//Exam Allocation Manager//Calendar//EN",
+            "CALSCALE:GREGORIAN",
+            "METHOD:PUBLISH",
+          ];
+          events.forEach((x, i) => {
+            const start = Number(x.start ?? min(x.start_time)),
+              end = Number(
+                x.end ??
+                  start +
+                    Number(x.duration_min) +
+                    Number(x.extra_time_min || 0),
+              ),
+              summary =
+                calendarScope === "student"
+                  ? `${x.subject} ${x.paper}`
+                  : `${x.subject} ${x.paper} · ${x.studentCount || 1} candidate(s)`,
+              candidateList =
+                x.studentNames?.join(", ") || x.candidate_name || "";
+            lines.push(
+              "BEGIN:VEVENT",
+              `UID:${calendarScope}-${calendarResource}-${x.date}-${start}-${i}@exam-allocation-manager`,
+              `DTSTAMP:${new Date()
+                .toISOString()
+                .replace(/[-:]/g, "")
+                .replace(/\.\d{3}/, "")}`,
+              `DTSTART:${fmt(x.date, start)}`,
+              `DTEND:${fmt(x.date, end)}`,
+              `SUMMARY:${escICS(summary)}`,
+              `LOCATION:${escICS(x.room_id || "Room not assigned")}`,
+              `DESCRIPTION:${escICS(`Candidate(s): ${candidateList}\nStudent ID: ${x.candidate_id || "multiple"}\nProctor: ${x.proctor_name || "Unassigned"}\nEquipment: ${x.equipment || "none"}`)}`,
+              "END:VEVENT",
+            );
+          });
+          lines.push("END:VCALENDAR");
+          downloadBlob(
+            `calendar-${calendarScope}-${calendarResource}-${from}.ics`,
+            lines.join("\r\n") + "\r\n",
+            "text/calendar",
+          );
+          setNotice(
+            `Exported ${events.length} ${calendarScope} calendar event${events.length === 1 ? "" : "s"} for ${from} to ${to}.`,
+            "success",
+          );
+          render();
+        } catch (e) {
+          setNotice(
+            `Calendar export failed: ${e.message || "unexpected export error"}`,
+          );
+          render();
+        }
+      }
+      addWorkspaceNav();
+      render();
+    </script>
+  </body>
+</html>
